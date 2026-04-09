@@ -1,0 +1,201 @@
+<section id="features" class="features">
+	<h2 class="section-title fade-in">Everything you need to discover perfect meals</h2>
+	<p class="section-subtitle fade-in">plaite combines AI intelligence with intuitive design to make recipe finding effortless</p>
+
+	<div class="feature-grid">
+		<div class="feature-card fade-in">
+			<img class="feature-image" src="/images/meal-planning-salad.jpg" alt="Fresh Salad Bowl" loading="lazy" />
+			<div class="feature-content">
+				<div class="feature-icon">🍽️</div>
+				<h3>Health Curated Recipes</h3>
+				<p>Our AI and health scores selected the top 1% of all recipes from across the web.</p>
+				<ul class="feature-list">
+					<li>Carbohydrate quality</li>
+					<li>Plant based proteins</li>
+					<li>Micronutrient scoring</li>
+					<li>Healthy fats</li>
+					<li>Variety to prevent meal fatigue</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="feature-card fade-in">
+			<img class="feature-image" src="/images/ai-cookbook-prep.jpg" alt="Recipe Prep" loading="lazy" />
+			<div class="feature-content">
+				<div class="feature-icon">📖</div>
+				<h3>AI-Powered Cookbook</h3>
+				<p>Dynamic recipes that learn your taste and suggest meals you'll love.</p>
+				<ul class="feature-list">
+					<li>Thousands of curated recipes</li>
+					<li>Personalized recommendations</li>
+					<li>Save favorites</li>
+					<li>Time & difficulty filters</li>
+					<li>Smart substitutions</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="feature-card fade-in">
+			<img class="feature-image" src="/images/shopping-list.jpg" alt="Grocery Shopping" loading="lazy" />
+			<div class="feature-content">
+				<div class="feature-icon">📝</div>
+				<h3>Smart Shopping Lists <span class="badge">coming soon</span></h3>
+				<p>Auto-generated, organized lists to save time and reduce waste.</p>
+				<ul class="feature-list">
+					<li>Auto-generated from plans</li>
+					<li>Organized by aisle</li>
+					<li>Optimized quantities</li>
+					<li>No duplicate buys</li>
+					<li>Check off as you go</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.features {
+		padding: 6rem 5%;
+		background: var(--color-bg);
+	}
+
+	.section-title {
+		text-align: center;
+		font-size: 2.8rem;
+		margin-bottom: 1rem;
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.section-subtitle {
+		text-align: center;
+		font-size: 1.15rem;
+		color: var(--color-text-muted);
+		margin-bottom: 4rem;
+		max-width: 700px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.feature-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 2rem;
+		max-width: var(--max-width);
+		margin: 0 auto;
+	}
+
+	.feature-card {
+		background: var(--color-white);
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
+	}
+
+	.feature-card:hover {
+		transform: translateY(-6px);
+		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+	}
+
+	.feature-image {
+		width: 100%;
+		height: 240px;
+		object-fit: cover;
+	}
+
+	.feature-content {
+		padding: 2rem;
+	}
+
+	.feature-icon {
+		width: 56px;
+		height: 56px;
+		border-radius: 50%;
+		background: var(--color-primary-light);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 1.6rem;
+		margin-bottom: 1rem;
+	}
+
+	h3 {
+		font-size: 1.4rem;
+		font-weight: 700;
+		margin-bottom: 0.5rem;
+		color: var(--color-text);
+	}
+
+	.badge {
+		display: inline-block;
+		background: var(--color-primary-light);
+		color: var(--color-primary);
+		font-size: 0.75rem;
+		font-weight: 600;
+		padding: 0.2rem 0.6rem;
+		border-radius: var(--radius-pill);
+		vertical-align: middle;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+	}
+
+	.feature-content > p {
+		color: var(--color-text-muted);
+		font-size: 1rem;
+		margin-bottom: 1.25rem;
+		line-height: 1.6;
+	}
+
+	.feature-list {
+		list-style: none;
+		padding: 0;
+	}
+
+	.feature-list li {
+		padding: 0.45rem 0;
+		padding-left: 1.6rem;
+		position: relative;
+		color: var(--color-text);
+		font-size: 0.95rem;
+	}
+
+	.feature-list li::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 8px;
+		height: 8px;
+		background: var(--color-primary);
+		border-radius: 50%;
+		opacity: 0.7;
+	}
+
+	@media (max-width: 1024px) {
+		.feature-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+		.section-title {
+			font-size: 2.4rem;
+		}
+	}
+
+	@media (max-width: 768px) {
+		.features {
+			padding: 4rem 4%;
+		}
+		.feature-grid {
+			grid-template-columns: 1fr;
+			max-width: 500px;
+		}
+		.section-title {
+			font-size: 2rem;
+		}
+		.section-subtitle {
+			font-size: 1.05rem;
+			margin-bottom: 2.5rem;
+		}
+	}
+</style>

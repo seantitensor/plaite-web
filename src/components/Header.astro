@@ -1,0 +1,93 @@
+---
+interface Props {
+	showBack?: boolean;
+}
+
+const { showBack = false } = Astro.props;
+---
+
+<header>
+	<nav>
+		<div class="nav-left">
+			<a class="logo" href="/">plaite</a>
+		</div>
+		<div class="nav-right">
+			{showBack ? (
+				<a href="/" class="cta-button">Back to Home</a>
+			) : (
+				<a href="https://apps.apple.com/us/app/plaite/id6738847946" class="cta-button" target="_blank" rel="noopener">Download App</a>
+			)}
+		</div>
+	</nav>
+</header>
+
+<style>
+	header {
+		position: fixed;
+		top: 0;
+		width: 100%;
+		background: rgba(255, 255, 255, 0.95);
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
+		padding: 1.25rem 5%;
+		z-index: 1000;
+		box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+	}
+
+	nav {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		max-width: var(--max-width);
+		margin: 0 auto;
+	}
+
+	.logo {
+		font-size: 1.8rem;
+		font-weight: 700;
+		color: var(--color-primary);
+	}
+
+	.cta-button {
+		background: var(--color-primary-gradient);
+		color: var(--color-white);
+		padding: 0.75rem 2rem;
+		border-radius: var(--radius-pill);
+		font-weight: 600;
+		font-size: 0.95rem;
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
+		border: none;
+		cursor: pointer;
+	}
+
+	.cta-button:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 10px 30px rgba(74, 155, 107, 0.4);
+	}
+
+	@media (max-width: 768px) {
+		header {
+			padding: 1rem 4%;
+		}
+		.logo {
+			font-size: 1.4rem;
+		}
+		.cta-button {
+			padding: 0.6rem 1.2rem;
+			font-size: 0.9rem;
+		}
+	}
+
+	@media (max-width: 480px) {
+		header {
+			padding: 0.8rem 3%;
+		}
+		.logo {
+			font-size: 1.3rem;
+		}
+		.cta-button {
+			padding: 0.5rem 1rem;
+			font-size: 0.85rem;
+		}
+	}
+</style>

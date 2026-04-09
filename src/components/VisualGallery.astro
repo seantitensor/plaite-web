@@ -1,0 +1,150 @@
+<section class="visual-section">
+	<h2 class="section-title fade-in">Delicious meals, beautifully organized</h2>
+	<p class="section-subtitle fade-in">From vibrant salads to hearty dinners, discover endless possibilities</p>
+
+	<div class="visual-grid">
+		<div class="visual-card fade-in">
+			<img src="/images/fresh-nutritous.jpg" alt="Fresh & Nutritious" loading="lazy" />
+			<div class="visual-overlay">
+				<h3>Fresh & Nutritious</h3>
+				<p>Vibrant, healthy meals for every lifestyle</p>
+			</div>
+		</div>
+		<div class="visual-card fade-in">
+			<img src="/images/energizing-breakfast.jpg" alt="Energizing Breakfast" loading="lazy" />
+			<div class="visual-overlay">
+				<h3>Start Your Day Right</h3>
+				<p>Energizing breakfast options</p>
+			</div>
+		</div>
+		<div class="visual-card fade-in">
+			<img src="/images/family-dinner.jpg" alt="Family Dinner" loading="lazy" />
+			<div class="visual-overlay">
+				<h3>Family Favorites</h3>
+				<p>Meals everyone will love</p>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.visual-section {
+		padding: 6rem 5%;
+		background: var(--color-white);
+	}
+
+	.section-title {
+		text-align: center;
+		font-size: 2.8rem;
+		margin-bottom: 1rem;
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.section-subtitle {
+		text-align: center;
+		font-size: 1.15rem;
+		color: var(--color-text-muted);
+		margin-bottom: 4rem;
+		max-width: 700px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.visual-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 2rem;
+		max-width: var(--max-width);
+		margin: 0 auto;
+	}
+
+	.visual-card {
+		position: relative;
+		border-radius: var(--radius-lg);
+		overflow: hidden;
+		aspect-ratio: 4 / 3;
+		cursor: pointer;
+	}
+
+	.visual-card img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 0.5s ease;
+	}
+
+	.visual-card:hover img {
+		transform: scale(1.08);
+	}
+
+	.visual-overlay {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(
+			0deg,
+			rgba(0, 0, 0, 0.65) 0%,
+			rgba(0, 0, 0, 0.1) 50%,
+			transparent 100%
+		);
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		padding: 2rem;
+		transition: background 0.3s ease;
+	}
+
+	.visual-card:hover .visual-overlay {
+		background: linear-gradient(
+			0deg,
+			rgba(0, 0, 0, 0.75) 0%,
+			rgba(0, 0, 0, 0.2) 60%,
+			transparent 100%
+		);
+	}
+
+	.visual-overlay h3 {
+		color: var(--color-white);
+		font-size: 1.4rem;
+		font-weight: 700;
+		margin-bottom: 0.3rem;
+	}
+
+	.visual-overlay p {
+		color: rgba(255, 255, 255, 0.85);
+		font-size: 0.95rem;
+	}
+
+	@media (max-width: 1024px) {
+		.visual-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+		.visual-card:last-child {
+			grid-column: span 2;
+			max-height: 350px;
+		}
+		.section-title {
+			font-size: 2.4rem;
+		}
+	}
+
+	@media (max-width: 768px) {
+		.visual-section {
+			padding: 4rem 4%;
+		}
+		.visual-grid {
+			grid-template-columns: 1fr;
+		}
+		.visual-card:last-child {
+			grid-column: span 1;
+			max-height: none;
+		}
+		.section-title {
+			font-size: 2rem;
+		}
+		.section-subtitle {
+			font-size: 1.05rem;
+			margin-bottom: 2.5rem;
+		}
+	}
+</style>

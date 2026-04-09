@@ -1,0 +1,127 @@
+<section id="how-it-works" class="how-it-works">
+	<h2 class="section-title fade-in">How plaite works</h2>
+	<p class="section-subtitle fade-in">Get started in minutes and enjoy stress-free meal planning</p>
+
+	<div class="steps">
+		<div class="step fade-in">
+			<div class="step-number">1</div>
+			<h3>Set Your Preferences</h3>
+			<p>Tell us about your diet, allergies, skill level, and family size</p>
+		</div>
+		<div class="step fade-in">
+			<div class="step-number">2</div>
+			<h3>Discover Healthy Meals</h3>
+			<p>Use simple swipes to explore the healthy recipes.</p>
+		</div>
+		<div class="step fade-in">
+			<div class="step-number">3</div>
+			<h3>Save Your Favorites</h3>
+			<p>Store your favorite meals across devices.</p>
+		</div>
+		<div class="step fade-in">
+			<div class="step-number">4</div>
+			<h3>Cook & Share</h3>
+			<p>Follow simple steps and enjoy delicious meals together.</p>
+		</div>
+	</div>
+</section>
+
+<style>
+	.how-it-works {
+		padding: 6rem 5%;
+		background: var(--color-bg);
+	}
+
+	.section-title {
+		text-align: center;
+		font-size: 2.8rem;
+		margin-bottom: 1rem;
+		font-weight: 700;
+		color: var(--color-text);
+	}
+
+	.section-subtitle {
+		text-align: center;
+		font-size: 1.15rem;
+		color: var(--color-text-muted);
+		margin-bottom: 4rem;
+		max-width: 700px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.steps {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: 2rem;
+		max-width: var(--max-width);
+		margin: 0 auto;
+	}
+
+	.step {
+		text-align: center;
+		padding: 2.5rem 1.5rem;
+		background: var(--color-white);
+		border-radius: var(--radius-lg);
+		box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
+	}
+
+	.step:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 10px 36px rgba(0, 0, 0, 0.1);
+	}
+
+	.step-number {
+		width: 56px;
+		height: 56px;
+		border-radius: 50%;
+		background: var(--color-primary-gradient);
+		color: var(--color-white);
+		font-size: 1.4rem;
+		font-weight: 700;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin: 0 auto 1.25rem;
+	}
+
+	h3 {
+		font-size: 1.2rem;
+		font-weight: 700;
+		margin-bottom: 0.75rem;
+		color: var(--color-text);
+	}
+
+	p {
+		color: var(--color-text-muted);
+		font-size: 0.95rem;
+		line-height: 1.6;
+	}
+
+	@media (max-width: 1024px) {
+		.steps {
+			grid-template-columns: repeat(2, 1fr);
+		}
+		.section-title {
+			font-size: 2.4rem;
+		}
+	}
+
+	@media (max-width: 768px) {
+		.how-it-works {
+			padding: 4rem 4%;
+		}
+		.steps {
+			grid-template-columns: 1fr;
+			max-width: 450px;
+		}
+		.section-title {
+			font-size: 2rem;
+		}
+		.section-subtitle {
+			font-size: 1.05rem;
+			margin-bottom: 2.5rem;
+		}
+	}
+</style>
