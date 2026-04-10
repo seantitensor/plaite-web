@@ -1,0 +1,8 @@
+---
+import AdminLayout from '../../components/admin/AdminLayout.astro';
+import AnalyticsDashboard from '../../components/admin/analytics/AnalyticsDashboard';
+---
+
+<AdminLayout title="Analytics" activePage="analytics">
+	<AnalyticsDashboard client:load />
+</AdminLayout>

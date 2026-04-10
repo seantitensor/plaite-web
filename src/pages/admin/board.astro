@@ -1,0 +1,8 @@
+---
+import AdminLayout from '../../components/admin/AdminLayout.astro';
+import EpicBoard from '../../components/admin/board/EpicBoard';
+---
+
+<AdminLayout title="Roadmap" activePage="board">
+	<EpicBoard client:load />
+</AdminLayout>

@@ -1,0 +1,240 @@
+---
+interface Props {
+	title?: string;
+	activePage?: 'overview' | 'analytics' | 'board';
+}
+
+const { title = 'Admin Dashboard', activePage = 'overview' } = Astro.props;
+const user = Astro.locals.user;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+		<title>{title} - plaite admin</title>
+	</head>
+	<body>
+		<div class="admin-shell">
+			<aside class="sidebar">
+				<div class="sidebar-header">
+					<a href="/admin" class="sidebar-logo">plaite</a>
+					<span class="sidebar-badge">admin</span>
+				</div>
+
+				<nav class="sidebar-nav">
+					<a href="/admin" class={`nav-item ${activePage === 'overview' ? 'active' : ''}`}>
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+						Overview
+					</a>
+					<a href="/admin/analytics" class={`nav-item ${activePage === 'analytics' ? 'active' : ''}`}>
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+						Analytics
+					</a>
+					<a href="/admin/board" class={`nav-item ${activePage === 'board' ? 'active' : ''}`}>
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>
+						Roadmap
+					</a>
+				</nav>
+
+				<div class="sidebar-footer">
+					{user && (
+						<div class="user-info">
+							<div class="user-avatar">{user.name?.charAt(0).toUpperCase() || 'A'}</div>
+							<div class="user-details">
+								<div class="user-name">{user.name}</div>
+								<div class="user-email">{user.email}</div>
+							</div>
+						</div>
+					)}
+					<a href="/api/admin/auth/logout" class="logout-btn">Sign Out</a>
+				</div>
+			</aside>
+
+			<main class="main-content">
+				<slot />
+			</main>
+		</div>
+	</body>
+</html>
+
+<style>
+	* {
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+	}
+
+	body {
+		font-family: 'Inter', sans-serif;
+		background: #f8fafc;
+		color: #1e293b;
+		min-height: 100vh;
+	}
+
+	.admin-shell {
+		display: flex;
+		min-height: 100vh;
+	}
+
+	.sidebar {
+		width: 240px;
+		background: #1e293b;
+		color: #cbd5e1;
+		display: flex;
+		flex-direction: column;
+		position: fixed;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		z-index: 100;
+	}
+
+	.sidebar-header {
+		padding: 1.5rem;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		border-bottom: 1px solid #334155;
+	}
+
+	.sidebar-logo {
+		font-size: 1.5rem;
+		font-weight: 700;
+		color: #4ade80;
+		text-decoration: none;
+	}
+
+	.sidebar-badge {
+		font-size: 0.65rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		background: #334155;
+		padding: 0.2rem 0.5rem;
+		border-radius: 4px;
+		color: #94a3b8;
+	}
+
+	.sidebar-nav {
+		padding: 1rem 0.75rem;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.nav-item {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.65rem 0.75rem;
+		border-radius: 8px;
+		color: #94a3b8;
+		text-decoration: none;
+		font-size: 0.9rem;
+		font-weight: 500;
+		transition: all 0.15s ease;
+	}
+
+	.nav-item:hover {
+		background: #334155;
+		color: #e2e8f0;
+	}
+
+	.nav-item.active {
+		background: #4A9B6B;
+		color: #fff;
+	}
+
+	.sidebar-footer {
+		padding: 1rem;
+		border-top: 1px solid #334155;
+	}
+
+	.user-info {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		margin-bottom: 0.75rem;
+	}
+
+	.user-avatar {
+		width: 32px;
+		height: 32px;
+		border-radius: 50%;
+		background: #4A9B6B;
+		color: #fff;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 0.8rem;
+		font-weight: 600;
+	}
+
+	.user-details {
+		overflow: hidden;
+	}
+
+	.user-name {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: #e2e8f0;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.user-email {
+		font-size: 0.7rem;
+		color: #64748b;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.logout-btn {
+		display: block;
+		text-align: center;
+		padding: 0.5rem;
+		border-radius: 6px;
+		color: #94a3b8;
+		text-decoration: none;
+		font-size: 0.8rem;
+		font-weight: 500;
+		transition: all 0.15s;
+	}
+
+	.logout-btn:hover {
+		background: #334155;
+		color: #f87171;
+	}
+
+	.main-content {
+		flex: 1;
+		margin-left: 240px;
+		padding: 2rem;
+		min-height: 100vh;
+	}
+
+	@media (max-width: 768px) {
+		.sidebar {
+			width: 60px;
+		}
+		.sidebar-logo, .sidebar-badge, .nav-item span, .user-details, .logout-btn {
+			display: none;
+		}
+		.sidebar-header {
+			justify-content: center;
+		}
+		.nav-item {
+			justify-content: center;
+			padding: 0.75rem;
+		}
+		.main-content {
+			margin-left: 60px;
+		}
+	}
+</style>
