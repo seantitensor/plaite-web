@@ -10,10 +10,9 @@ export const GET: APIRoute = async (ctx) => {
 	const endDate = url.searchParams.get('endDate') || 'today';
 
 	try {
-		const { getFunnelData } = await import('../../../../lib/firebase/analytics');
-		const { steps } = await getFunnelData(startDate, endDate);
-
-		return new Response(JSON.stringify({ steps }), {
+		const { getHourlyActivity } = await import('../../../../lib/firebase/analytics');
+		const { grid } = await getHourlyActivity(startDate, endDate);
+		return new Response(JSON.stringify({ grid }), {
 			headers: { 'Content-Type': 'application/json' },
 		});
 	} catch (error: any) {

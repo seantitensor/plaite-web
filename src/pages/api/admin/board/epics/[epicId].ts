@@ -1,6 +1,11 @@
 import type { APIRoute } from 'astro';
+import { requireAdmin } from '../../../../../lib/auth/requireAdmin';
 
-export const PUT: APIRoute = async ({ params, request }) => {
+export const PUT: APIRoute = async (ctx) => {
+	const denied = await requireAdmin(ctx);
+	if (denied) return denied;
+
+	const { params, request } = ctx;
 	try {
 		const { epicId } = params;
 		if (!epicId) {
@@ -30,7 +35,11 @@ export const PUT: APIRoute = async ({ params, request }) => {
 	}
 };
 
-export const DELETE: APIRoute = async ({ params }) => {
+export const DELETE: APIRoute = async (ctx) => {
+	const denied = await requireAdmin(ctx);
+	if (denied) return denied;
+
+	const { params } = ctx;
 	try {
 		const { epicId } = params;
 		if (!epicId) {

@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { requireAdmin } from '../../../../lib/auth/requireAdmin';
+import { requireAdmin } from '../../../../../lib/auth/requireAdmin';
 
 export const GET: APIRoute = async (ctx) => {
 	const denied = await requireAdmin(ctx);
@@ -10,10 +10,10 @@ export const GET: APIRoute = async (ctx) => {
 	const endDate = url.searchParams.get('endDate') || 'today';
 
 	try {
-		const { getFunnelData } = await import('../../../../lib/firebase/analytics');
-		const { steps } = await getFunnelData(startDate, endDate);
-
-		return new Response(JSON.stringify({ steps }), {
+		const { getHistoryAuthFailures, computeGranularity } = await import('../../../../../lib/firebase/analytics');
+		const granularity = computeGranularity(startDate, endDate);
+		const buckets = await getHistoryAuthFailures(startDate, endDate, granularity);
+		return new Response(JSON.stringify({ granularity, buckets }), {
 			headers: { 'Content-Type': 'application/json' },
 		});
 	} catch (error: any) {

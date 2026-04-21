@@ -7,15 +7,16 @@ interface Step {
 
 interface Props {
 	steps: Step[];
+	title?: string;
 }
 
-const COLORS = ['#4A9B6B', '#22c55e', '#86efac'];
+const COLORS = ['#4A9B6B', '#22c55e', '#86efac', '#bbf7d0'];
 
-export default function FunnelChart({ steps }: Props) {
+export default function FunnelChart({ steps, title = 'Conversion Funnel' }: Props) {
 	if (steps.length === 0) {
 		return (
 			<div style={styles.container}>
-				<h3 style={styles.title}>Conversion Funnel</h3>
+				<h3 style={styles.title}>{title}</h3>
 				<p style={styles.empty}>No funnel data available.</p>
 			</div>
 		);
@@ -25,7 +26,7 @@ export default function FunnelChart({ steps }: Props) {
 
 	return (
 		<div style={styles.container}>
-			<h3 style={styles.title}>Conversion Funnel</h3>
+			<h3 style={styles.title}>{title}</h3>
 			<ResponsiveContainer width="100%" height={250}>
 				<BarChart data={steps} layout="vertical" margin={{ top: 5, right: 30, left: 80, bottom: 5 }}>
 					<CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />

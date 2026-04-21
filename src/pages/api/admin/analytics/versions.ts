@@ -10,10 +10,14 @@ export const GET: APIRoute = async (ctx) => {
 	const endDate = url.searchParams.get('endDate') || 'today';
 
 	try {
-		const { getFunnelData } = await import('../../../../lib/firebase/analytics');
-		const { steps } = await getFunnelData(startDate, endDate);
-
-		return new Response(JSON.stringify({ steps }), {
+		const { getAppVersions } = await import('../../../../lib/firebase/analytics');
+		const response = await getAppVersions(startDate, endDate);
+		const versions = (response.rows || []).map((row) => ({
+			version: row.dimensionValues?.[0]?.value || '(unknown)',
+			sessions: Number(row.metricValues?.[0]?.value || 0),
+			users: Number(row.metricValues?.[1]?.value || 0),
+		}));
+		return new Response(JSON.stringify({ versions }), {
 			headers: { 'Content-Type': 'application/json' },
 		});
 	} catch (error: any) {

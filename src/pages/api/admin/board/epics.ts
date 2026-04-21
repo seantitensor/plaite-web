@@ -1,8 +1,13 @@
 import type { APIRoute } from 'astro';
+import { requireAdmin } from '../../../../lib/auth/requireAdmin';
 
 const BOARD_ID = 'default';
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async (ctx) => {
+	const denied = await requireAdmin(ctx);
+	if (denied) return denied;
+
+	const { request } = ctx;
 	try {
 		const body = await request.json();
 		if (!body.name || typeof body.name !== 'string') {

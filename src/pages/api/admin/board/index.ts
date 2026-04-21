@@ -1,8 +1,12 @@
 import type { APIRoute } from 'astro';
+import { requireAdmin } from '../../../../lib/auth/requireAdmin';
 
 const BOARD_ID = 'default';
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async (ctx) => {
+	const denied = await requireAdmin(ctx);
+	if (denied) return denied;
+
 	try {
 		const { adminDb } = await import('../../../../lib/firebase/admin');
 

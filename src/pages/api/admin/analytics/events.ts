@@ -1,6 +1,11 @@
 import type { APIRoute } from 'astro';
+import { requireAdmin } from '../../../../lib/auth/requireAdmin';
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async (ctx) => {
+	const denied = await requireAdmin(ctx);
+	if (denied) return denied;
+
+	const { url } = ctx;
 	const startDate = url.searchParams.get('startDate') || '30daysAgo';
 	const endDate = url.searchParams.get('endDate') || 'today';
 

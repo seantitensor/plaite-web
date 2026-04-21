@@ -5,15 +5,10 @@ export const GET: APIRoute = async (ctx) => {
 	const denied = await requireAdmin(ctx);
 	if (denied) return denied;
 
-	const { url } = ctx;
-	const startDate = url.searchParams.get('startDate') || '30daysAgo';
-	const endDate = url.searchParams.get('endDate') || 'today';
-
 	try {
-		const { getFunnelData } = await import('../../../../lib/firebase/analytics');
-		const { steps } = await getFunnelData(startDate, endDate);
-
-		return new Response(JSON.stringify({ steps }), {
+		const { getRealtimeActiveUsers } = await import('../../../../lib/firebase/analytics');
+		const data = await getRealtimeActiveUsers();
+		return new Response(JSON.stringify(data), {
 			headers: { 'Content-Type': 'application/json' },
 		});
 	} catch (error: any) {

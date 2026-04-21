@@ -1,15 +1,21 @@
 import type { APIRoute } from 'astro';
+import { requireAdmin } from '../../../../lib/auth/requireAdmin';
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async (ctx) => {
+	const denied = await requireAdmin(ctx);
+	if (denied) return denied;
+
+	const { url } = ctx;
 	const startDate = url.searchParams.get('startDate') || '30daysAgo';
 	const endDate = url.searchParams.get('endDate') || 'today';
 
 	try {
-		const { getActiveUsers, getSessions } = await import('../../../../lib/firebase/analytics');
+		const { getActiveUsers, getSessions, getOverviewTotals } = await import('../../../../lib/firebase/analytics');
 
-		const [usersResponse, sessionsResponse] = await Promise.all([
+		const [usersResponse, sessionsResponse, totals] = await Promise.all([
 			getActiveUsers(startDate, endDate),
 			getSessions(startDate, endDate),
+			getOverviewTotals(startDate, endDate),
 		]);
 
 		const dailyData: Record<string, any> = {};
@@ -35,17 +41,6 @@ export const GET: APIRoute = async ({ url }) => {
 		}
 
 		const daily = Object.values(dailyData).sort((a: any, b: any) => a.date.localeCompare(b.date));
-
-		// Compute totals
-		const totals = daily.reduce(
-			(acc: any, d: any) => ({
-				activeUsers: acc.activeUsers + (d.activeUsers || 0),
-				newUsers: acc.newUsers + (d.newUsers || 0),
-				sessions: acc.sessions + (d.sessions || 0),
-				screenViews: acc.screenViews + (d.screenViews || 0),
-			}),
-			{ activeUsers: 0, newUsers: 0, sessions: 0, screenViews: 0 },
-		);
 
 		return new Response(JSON.stringify({ daily, totals }), {
 			headers: { 'Content-Type': 'application/json' },

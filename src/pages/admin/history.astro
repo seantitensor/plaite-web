@@ -1,0 +1,8 @@
+---
+import AdminLayout from '../../components/admin/AdminLayout.astro';
+import HistoryDashboard from '../../components/admin/history/HistoryDashboard';
+---
+
+<AdminLayout title="History" activePage="history">
+	<HistoryDashboard client:load />
+</AdminLayout>
