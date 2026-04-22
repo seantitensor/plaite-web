@@ -18,22 +18,15 @@ export const HISTORY_PRESETS: HistoryRange[] = [
 
 export default function HistoryRangePicker({ value, onChange }: Props) {
 	return (
-		<div style={{ display: 'flex', gap: '0.5rem' }}>
-			{HISTORY_PRESETS.map((r) => (
+		<div className="inline-flex bg-surface border border-hairline rounded-md overflow-hidden">
+			{HISTORY_PRESETS.map((r, i) => (
 				<button
 					key={r.label}
+					type="button"
 					onClick={() => onChange(r)}
-					style={{
-						padding: '0.4rem 1rem',
-						borderRadius: '6px',
-						border: 'none',
-						background: value === r.label ? '#4A9B6B' : '#e2e8f0',
-						color: value === r.label ? '#fff' : '#475569',
-						fontWeight: 600,
-						fontSize: '0.8rem',
-						cursor: 'pointer',
-						fontFamily: 'Inter, sans-serif',
-					}}
+					className={`px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.12em] transition-colors ${
+						value === r.label ? 'bg-accent text-surface' : 'text-muted hover:text-ink hover:bg-mint-wash'
+					} ${i !== 0 ? 'border-l border-hairline' : ''}`}
 				>
 					{r.label}
 				</button>

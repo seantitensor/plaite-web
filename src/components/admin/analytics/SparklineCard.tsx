@@ -9,14 +9,13 @@ interface Props {
 	color?: string;
 }
 
-export default function SparklineCard({ title, value, sub, icon, data, color = '#dc2626' }: Props) {
+export default function SparklineCard({ title, value, sub, data, color = '#9b4a3a' }: Props) {
 	return (
-		<div style={styles.card}>
-			{icon && <div style={styles.icon}>{icon}</div>}
-			<div style={styles.value}>{value}</div>
-			<div style={styles.title}>{title}</div>
-			{sub && <div style={styles.sub}>{sub}</div>}
-			<div style={styles.spark}>
+		<div className="bg-surface border border-hairline rounded-lg p-5">
+			<div className="font-semibold text-[11px] uppercase tracking-[0.1em] text-ink/70">{title}</div>
+			<div className="text-[38px] font-medium tracking-[-0.02em] leading-none text-ink mt-3 tabular-nums">{value}</div>
+			{sub && <div className="font-mono text-[11px] text-muted mt-2">{sub}</div>}
+			<div className="mt-2">
 				<ResponsiveContainer width="100%" height={36}>
 					<LineChart data={data} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
 						<Line type="monotone" dataKey="y" stroke={color} strokeWidth={1.5} dot={false} />
@@ -26,18 +25,3 @@ export default function SparklineCard({ title, value, sub, icon, data, color = '
 		</div>
 	);
 }
-
-const styles: Record<string, React.CSSProperties> = {
-	card: {
-		background: '#fff',
-		borderRadius: '12px',
-		padding: '1.5rem',
-		boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-		border: '1px solid #e2e8f0',
-	},
-	icon: { fontSize: '1.5rem', marginBottom: '0.5rem' },
-	value: { fontSize: '2rem', fontWeight: 700, color: '#1e293b', lineHeight: 1.2 },
-	title: { fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem', fontWeight: 500 },
-	sub: { fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.25rem' },
-	spark: { marginTop: '0.5rem' },
-};

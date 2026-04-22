@@ -4,38 +4,14 @@ import HistoryLineChart, { type Granularity } from './HistoryLineChart';
 import CumulativeUsersChart from './CumulativeUsersChart';
 import { formatDuration, formatNumber } from '../../../lib/format';
 
-interface UserBucket {
-	bucket: string;
-	activeUsers: number;
-	mau: number;
-	newUsers: number;
-}
-interface SessionBucket {
-	bucket: string;
-	sessions: number;
-	screenPageViews: number;
-	avgSessionDuration: number;
-	sessionsPerUser: number;
-}
-interface CrashBucket {
-	bucket: string;
-	crashes: number;
-	sessions: number;
-	rate: number;
-}
-interface AuthBucket {
-	bucket: string;
-	failures: number;
-	sessionStarts: number;
-	rate: number;
-}
+interface UserBucket { bucket: string; activeUsers: number; mau: number; newUsers: number }
+interface SessionBucket { bucket: string; sessions: number; screenPageViews: number; avgSessionDuration: number; sessionsPerUser: number }
+interface CrashBucket { bucket: string; crashes: number; sessions: number; rate: number }
+interface AuthBucket { bucket: string; failures: number; sessionStarts: number; rate: number }
 
-// Mirror of computeGranularity in analytics.ts — compute client-side so x-axis
-// formatting stays correct even if a fetch fails.
 function clientGranularity(startDate: string): Granularity {
 	if (startDate === '30daysAgo' || startDate === '90daysAgo') return 'daily';
 	if (startDate === '365daysAgo') return 'weekly';
-	// Absolute YYYY-MM-DD (All time preset) → monthly.
 	return 'monthly';
 }
 
@@ -48,17 +24,13 @@ export default function HistoryDashboard() {
 	const [crashBuckets, setCrashBuckets] = useState<CrashBucket[]>([]);
 	const [authBuckets, setAuthBuckets] = useState<AuthBucket[]>([]);
 
-	const granularity = useMemo<Granularity>(
-		() => clientGranularity(activeRange.startDate),
-		[activeRange],
-	);
+	const granularity = useMemo<Granularity>(() => clientGranularity(activeRange.startDate), [activeRange]);
 
 	useEffect(() => {
 		async function fetchAll() {
 			setLoading(true);
 			setError('');
 			const params = `?startDate=${activeRange.startDate}&endDate=${activeRange.endDate}`;
-
 			try {
 				const results = await Promise.allSettled([
 					fetch(`/api/admin/analytics/history/users${params}`).then((r) => r.json()),
@@ -66,10 +38,8 @@ export default function HistoryDashboard() {
 					fetch(`/api/admin/analytics/history/crashes${params}`).then((r) => r.json()),
 					fetch(`/api/admin/analytics/history/auth-failures${params}`).then((r) => r.json()),
 				]);
-
 				const ok = (r: PromiseSettledResult<any>) =>
 					r.status === 'fulfilled' && !r.value.error ? r.value : null;
-
 				const u = ok(results[0]); setUserBuckets(u?.buckets || []);
 				const s = ok(results[1]); setSessionBuckets(s?.buckets || []);
 				const c = ok(results[2]); setCrashBuckets(c?.buckets || []);
@@ -83,13 +53,9 @@ export default function HistoryDashboard() {
 		fetchAll();
 	}, [activeRange]);
 
-	// Derived series for charts 3/8/9/10/11.
 	const activeSeries = userBuckets.map((b) => ({ bucket: b.bucket, value: b.activeUsers }));
 	const mauSeries = userBuckets.map((b) => ({ bucket: b.bucket, value: b.mau }));
-	const stickinessSeries = userBuckets.map((b) => ({
-		bucket: b.bucket,
-		value: b.mau > 0 ? (b.activeUsers / b.mau) * 100 : 0,
-	}));
+	const stickinessSeries = userBuckets.map((b) => ({ bucket: b.bucket, value: b.mau > 0 ? (b.activeUsers / b.mau) * 100 : 0 }));
 	const newUsersSeries = userBuckets.map((b) => ({ bucket: b.bucket, value: b.newUsers }));
 	const sessionsSeries = sessionBuckets.map((b) => ({ bucket: b.bucket, value: b.sessions }));
 	const screenSeries = sessionBuckets.map((b) => ({ bucket: b.bucket, value: b.screenPageViews }));
@@ -100,95 +66,39 @@ export default function HistoryDashboard() {
 
 	return (
 		<div>
-			<div style={styles.header}>
-				<h1 style={styles.pageTitle}>History</h1>
+			<header className="mb-8 flex items-start justify-between gap-4 flex-wrap">
+				<div>
+					<p className="font-semibold text-[11px] uppercase tracking-[0.14em] text-ink/70 mb-2">History</p>
+					<h1 className="italic text-[44px] font-light tracking-[-0.03em] leading-none text-ink">
+						Trends over time.
+					</h1>
+				</div>
 				<HistoryRangePicker value={activeRange.label} onChange={setActiveRange} />
-			</div>
+			</header>
 
-			{error && <div style={styles.error}>{error}</div>}
+			{error && (
+				<div className="bg-alarm-wash border border-alarm/25 text-alarm text-[13px] rounded-md px-4 py-3 mb-4">
+					{error}
+				</div>
+			)}
 
 			{loading ? (
-				<div style={styles.loading}>Loading history data...</div>
+				<div className="font-mono text-[12px] text-muted text-center py-16">Loading history…</div>
 			) : (
-				<div style={styles.stack}>
+				<div className="flex flex-col gap-4">
 					<CumulativeUsersChart userBuckets={userBuckets} granularity={granularity} />
-					<HistoryLineChart title="Active Users per bucket" data={activeSeries} granularity={granularity} />
-					<HistoryLineChart title="MAU (28-day active)" data={mauSeries} granularity={granularity} color="#8b5cf6" />
-					<HistoryLineChart
-						title="Stickiness (Active / MAU)"
-						data={stickinessSeries}
-						granularity={granularity}
-						color="#f59e0b"
-						valueFormatter={(v) => `${v.toFixed(1)}%`}
-					/>
-					<HistoryLineChart title="New Users" data={newUsersSeries} granularity={granularity} color="#3b82f6" />
-					<HistoryLineChart title="Sessions" data={sessionsSeries} granularity={granularity} />
-					<HistoryLineChart title="Screen Views" data={screenSeries} granularity={granularity} color="#0ea5e9" />
-					<HistoryLineChart
-						title="Avg Session Duration"
-						data={durationSeries}
-						granularity={granularity}
-						color="#14b8a6"
-						valueFormatter={(v) => formatDuration(v)}
-					/>
-					<HistoryLineChart
-						title="Sessions per User"
-						data={spuSeries}
-						granularity={granularity}
-						color="#a855f7"
-						valueFormatter={(v) => formatNumber(v)}
-					/>
-					<HistoryLineChart
-						title="Crash Rate"
-						data={crashRateSeries}
-						granularity={granularity}
-						color="#dc2626"
-						valueFormatter={(v) => `${v.toFixed(2)}%`}
-					/>
-					<HistoryLineChart
-						title="Auth Failure Rate"
-						data={authRateSeries}
-						granularity={granularity}
-						color="#ef4444"
-						valueFormatter={(v) => `${v.toFixed(2)}%`}
-					/>
+					<HistoryLineChart title="Active users per bucket" data={activeSeries} granularity={granularity} color="#8b5a2b" />
+					<HistoryLineChart title="MAU (28-day active)" data={mauSeries} granularity={granularity} color="#3e5544" />
+					<HistoryLineChart title="Stickiness (active / MAU)" data={stickinessSeries} granularity={granularity} color="#c49a6c" valueFormatter={(v) => `${v.toFixed(1)}%`} />
+					<HistoryLineChart title="New users" data={newUsersSeries} granularity={granularity} color="#8b5a2b" />
+					<HistoryLineChart title="Sessions" data={sessionsSeries} granularity={granularity} color="#3e5544" />
+					<HistoryLineChart title="Screen views" data={screenSeries} granularity={granularity} color="#8b5a2b" />
+					<HistoryLineChart title="Avg session duration" data={durationSeries} granularity={granularity} color="#3e5544" valueFormatter={(v) => formatDuration(v)} />
+					<HistoryLineChart title="Sessions per user" data={spuSeries} granularity={granularity} color="#c49a6c" valueFormatter={(v) => formatNumber(v)} />
+					<HistoryLineChart title="Crash rate" data={crashRateSeries} granularity={granularity} color="#9b4a3a" valueFormatter={(v) => `${v.toFixed(2)}%`} />
+					<HistoryLineChart title="Auth failure rate" data={authRateSeries} granularity={granularity} color="#9b4a3a" valueFormatter={(v) => `${v.toFixed(2)}%`} />
 				</div>
 			)}
 		</div>
 	);
 }
-
-const styles: Record<string, React.CSSProperties> = {
-	header: {
-		display: 'flex',
-		justifyContent: 'space-between',
-		alignItems: 'center',
-		marginBottom: '1.5rem',
-		gap: '1rem',
-		flexWrap: 'wrap',
-	},
-	pageTitle: {
-		fontSize: '1.5rem',
-		fontWeight: 700,
-		color: '#1e293b',
-	},
-	error: {
-		background: '#fef2f2',
-		color: '#dc2626',
-		padding: '1rem',
-		borderRadius: '8px',
-		marginBottom: '1rem',
-		fontSize: '0.9rem',
-	},
-	loading: {
-		textAlign: 'center',
-		padding: '4rem',
-		color: '#94a3b8',
-		fontSize: '1rem',
-	},
-	stack: {
-		display: 'flex',
-		flexDirection: 'column',
-		gap: '1.5rem',
-	},
-};

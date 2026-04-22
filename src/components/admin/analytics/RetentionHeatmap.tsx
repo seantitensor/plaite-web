@@ -1,120 +1,61 @@
-interface Props {
-	cohorts: Record<string, Record<string, number>>;
+interface Props { cohorts: Record<string, Record<string, number>> }
+
+function colorFor(value: number, base: number) {
+	if (!base || !value) return 'rgba(232, 223, 207, 0.5)';
+	const pct = value / base;
+	const alpha = Math.max(0.1, Math.min(1, pct));
+	return `rgba(139, 90, 43, ${alpha})`;
 }
 
 export default function RetentionHeatmap({ cohorts }: Props) {
-	const cohortNames = Object.keys(cohorts).sort();
-	if (cohortNames.length === 0) {
+	const entries = Object.entries(cohorts || {}).sort(([a], [b]) => a.localeCompare(b));
+	if (entries.length === 0) {
 		return (
-			<div style={styles.container}>
-				<h3 style={styles.title}>Retention Cohorts</h3>
-				<p style={styles.empty}>No retention data available for this period.</p>
+			<div className="bg-surface border border-hairline rounded-lg p-6">
+				<h3 className="italic text-[20px] font-normal tracking-[-0.01em] text-ink mb-4">Retention cohorts</h3>
+				<p className="font-mono text-[12px] text-muted">No retention data available.</p>
 			</div>
 		);
 	}
-
-	const maxDays = Math.max(...cohortNames.flatMap((c) => Object.keys(cohorts[c]).map(Number)));
-	const days = Array.from({ length: Math.min(maxDays + 1, 14) }, (_, i) => i);
-
-	function getColor(rate: number) {
-		if (rate >= 0.5) return '#166534';
-		if (rate >= 0.3) return '#22c55e';
-		if (rate >= 0.15) return '#86efac';
-		if (rate >= 0.05) return '#dcfce7';
-		return '#f1f5f9';
-	}
-
+	const DAYS = Array.from({ length: 14 }, (_, i) => String(i));
 	return (
-		<div style={styles.container}>
-			<h3 style={styles.title}>Retention Cohorts</h3>
-			<div style={{ overflow: 'auto' }}>
-				<table style={styles.table}>
-					<thead>
-						<tr>
-							<th style={styles.th}>Cohort</th>
-							{days.map((d) => (
-								<th key={d} style={{ ...styles.th, textAlign: 'center' }}>
-									Day {d}
-								</th>
-							))}
-						</tr>
-					</thead>
-					<tbody>
-						{cohortNames.slice(0, 10).map((name) => {
-							const day0 = cohorts[name]['0'] || 1;
-							return (
-								<tr key={name}>
-									<td style={styles.td}>{name}</td>
-									{days.map((d) => {
-										const users = cohorts[name][String(d)] || 0;
-										const rate = day0 > 0 ? users / day0 : 0;
-										return (
-											<td
-												key={d}
-												style={{
-													...styles.cell,
-													background: getColor(rate),
-													color: rate >= 0.3 ? '#fff' : '#334155',
-												}}
+		<div className="bg-surface border border-hairline rounded-lg p-6 overflow-auto">
+			<h3 className="italic text-[20px] font-normal tracking-[-0.01em] text-ink mb-4">Retention cohorts</h3>
+			<table className="border-collapse text-[11px]">
+				<thead>
+					<tr>
+						<th className="text-left font-semibold text-[11px] uppercase tracking-[0.1em] text-ink/70 pr-3 pb-2 border-b border-hairline">Cohort</th>
+						{DAYS.map((d) => (
+							<th key={d} className="font-mono text-[10px] text-muted text-center px-1 pb-2 border-b border-hairline">D{d}</th>
+						))}
+					</tr>
+				</thead>
+				<tbody>
+					{entries.map(([cohort, row]) => {
+						const base = row['0'] || 1;
+						return (
+							<tr key={cohort}>
+								<td className="font-mono text-[11px] text-muted pr-3 py-0.5 whitespace-nowrap">{cohort}</td>
+								{DAYS.map((d) => {
+									const v = row[d] || 0;
+									const pct = base > 0 ? Math.round((v / base) * 100) : 0;
+									return (
+										<td key={d} className="p-0">
+											<div
+												className="w-[36px] h-[22px] flex items-center justify-center rounded-sm font-mono text-[10px]"
+												style={{ background: colorFor(v, base), color: pct > 50 ? '#fff' : '#2b251d' }}
+												title={`${v} users (${pct}%)`}
 											>
-												{d === 0 ? users : `${Math.round(rate * 100)}%`}
-											</td>
-										);
-									})}
-								</tr>
-							);
-						})}
-					</tbody>
-				</table>
-			</div>
+												{v > 0 ? `${pct}%` : ''}
+											</div>
+										</td>
+									);
+								})}
+							</tr>
+						);
+					})}
+				</tbody>
+			</table>
 		</div>
 	);
 }
-
-const styles: Record<string, React.CSSProperties> = {
-	container: {
-		background: '#fff',
-		borderRadius: '12px',
-		padding: '1.5rem',
-		boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-		border: '1px solid #e2e8f0',
-	},
-	title: {
-		fontSize: '1rem',
-		fontWeight: 600,
-		color: '#1e293b',
-		marginBottom: '1rem',
-	},
-	empty: {
-		color: '#94a3b8',
-		fontSize: '0.9rem',
-	},
-	table: {
-		width: '100%',
-		borderCollapse: 'collapse',
-		fontSize: '0.8rem',
-	},
-	th: {
-		padding: '0.5rem',
-		borderBottom: '2px solid #e2e8f0',
-		color: '#64748b',
-		fontWeight: 600,
-		fontSize: '0.7rem',
-		textTransform: 'uppercase',
-		whiteSpace: 'nowrap',
-	},
-	td: {
-		padding: '0.5rem',
-		borderBottom: '1px solid #f1f5f9',
-		color: '#334155',
-		fontSize: '0.75rem',
-		whiteSpace: 'nowrap',
-	},
-	cell: {
-		padding: '0.4rem',
-		textAlign: 'center',
-		borderBottom: '1px solid #f1f5f9',
-		fontSize: '0.75rem',
-		fontWeight: 600,
-	},
-};

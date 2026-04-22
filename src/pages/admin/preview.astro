@@ -1,0 +1,448 @@
+---
+// Standalone preview — doesn't use AdminLayout so existing admin pages
+// stay untouched until we sign off on this direction.
+export const prerender = false;
+import '../../styles/admin-theme.css';
+
+const nav = [
+	{ label: 'Overview', icon: 'grid' },
+	{ label: 'Analytics', icon: 'chart' },
+	{ label: 'History', icon: 'clock' },
+	{ label: 'Messages', icon: 'mail', count: 3 },
+	{ label: 'Roadmap', icon: 'columns', active: true },
+	{ label: 'Preview', icon: 'sparkle' },
+];
+
+const palette = [
+	{ name: 'Canvas',      hex: '#FAF7F2', bg: 'bg-canvas',      border: true },
+	{ name: 'Surface',     hex: '#FFFFFF', bg: 'bg-surface',     border: true },
+	{ name: 'Sidebar',     hex: '#F1EBDF', bg: 'bg-sidebar',     border: true },
+	{ name: 'Hairline',    hex: '#E8DFCF', bg: 'bg-hairline',    border: true },
+	{ name: 'Ink',         hex: '#2B251D', bg: 'bg-ink',         border: false },
+	{ name: 'Muted',       hex: '#7A6F5E', bg: 'bg-muted',       border: false },
+	{ name: 'Accent',      hex: '#8B5A2B', bg: 'bg-accent',      border: false },
+	{ name: 'Accent soft', hex: '#C49A6C', bg: 'bg-accent-soft', border: false },
+	{ name: 'Mint',        hex: '#D5E1CE', bg: 'bg-mint',        border: true  },
+	{ name: 'Forest',      hex: '#3E5544', bg: 'bg-forest',      border: false },
+	{ name: 'Alarm',       hex: '#9B4A3A', bg: 'bg-alarm',       border: false },
+];
+
+const navCards = [
+	{ title: 'Analytics', desc: 'Users, sessions, retention, funnels, and geography from Firebase Analytics.' },
+	{ title: 'History', desc: 'Long-horizon trends for DAU, MAU, stickiness, crash rate over 30d → all-time.' },
+	{ title: 'Messages', desc: 'Contact-form submissions. Mark responded, reply, or send to the roadmap.' },
+	{ title: 'Roadmap', desc: 'Organize work into epics. Each feature has status, priority, labels, and todos.' },
+	{ title: 'Recipe Processing', desc: 'Ingest, enrich, and moderate recipes. In development.', soon: true },
+];
+
+const featureRows = [
+	{ title: 'Discover swipe & save', priority: 'P0', pColor: 'text-alarm', status: 'Done', sColor: 'text-forest border-forest/30 bg-mint', labels: [{ t: 'ios', c: 'bg-accent-wash text-accent' }, { t: 'core', c: 'bg-sidebar text-ink' }], done: 5, total: 5 },
+	{ title: 'Cookbook sync', priority: 'P1', pColor: 'text-accent', status: 'In progress', sColor: 'text-accent border-accent/40 bg-accent-wash', labels: [{ t: 'backend', c: 'bg-sidebar text-ink' }, { t: 'sync', c: 'bg-accent-wash text-accent' }], done: 3, total: 7 },
+	{ title: 'Recipe recommendations', priority: 'P2', pColor: 'text-muted', status: 'Not started', sColor: 'text-muted border-hairline bg-canvas', labels: [{ t: 'ai', c: 'bg-accent-wash text-accent' }], done: 0, total: 4 },
+];
+
+const messages = [
+	{ name: 'Alice Wu', email: 'alice@example.com', time: '2m ago', body: "Hey — love the app so far. Any chance you'll add imperial measurement support? Half my cookbooks are in cups.", responded: false },
+	{ name: 'Raj Patel', email: 'raj@example.com', time: '1h ago', body: "Would you consider adding a meal-prep planner for the whole week? It's the one feature I'd pay for.", responded: true },
+	{ name: 'Dennis', email: 'dennis@plaite.io', time: '3h ago', body: 'Crashed twice when opening the cookbook. iPhone 15 Pro, iOS 18.3.', responded: false },
+];
+
+const feed = [
+	{ kind: 'message', title: 'New message from Alice Wu', sub: 'Hey — love the app so far…', time: '2m' },
+	{ kind: 'feature', title: 'Feature "Cookbook sync" updated', time: '1h' },
+	{ kind: 'message', title: 'New message from Raj Patel', sub: 'Would you consider adding a meal-prep planner…', time: '1h' },
+	{ kind: 'epic', title: 'Epic "Current features" renamed', time: '6h' },
+	{ kind: 'message', title: 'New message from Dennis', sub: 'Crashed twice when opening the cookbook…', time: '3h' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link
+		href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700&display=swap"
+		rel="stylesheet"
+	/>
+	<title>Admin Preview — plaite</title>
+</head>
+<body class="bg-canvas text-ink font-sans antialiased min-h-screen">
+	<div class="flex">
+		{/* SIDEBAR */}
+		<aside class="w-60 bg-sidebar border-r border-hairline min-h-screen fixed top-0 left-0 flex flex-col">
+			<div class="px-6 pt-7 pb-6 flex items-baseline gap-2.5">
+				<span class="font-display italic text-[30px] font-semibold tracking-[-0.02em] leading-none text-forest">plaite</span>
+				<span class="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">admin</span>
+			</div>
+
+			<nav class="px-3 flex flex-col gap-0.5">
+				{nav.map((n) => (
+					<a
+						href="#"
+						class:list={[
+							'group relative flex items-center gap-2.5 px-3 py-2 rounded-md text-[13.5px] transition-colors',
+							n.active
+								? 'text-ink font-medium bg-surface'
+								: 'text-muted hover:text-ink hover:bg-mint-wash',
+						]}
+					>
+						{n.active && (
+							<span class="absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-full bg-accent"></span>
+						)}
+						<svg class="nav-icon" viewBox="0 0 24 24">
+							{n.icon === 'grid' && <>
+								<rect x="3" y="3" width="7" height="7" rx="1"/>
+								<rect x="14" y="3" width="7" height="7" rx="1"/>
+								<rect x="3" y="14" width="7" height="7" rx="1"/>
+								<rect x="14" y="14" width="7" height="7" rx="1"/>
+							</>}
+							{n.icon === 'chart' && <>
+								<path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/>
+							</>}
+							{n.icon === 'clock' && <>
+								<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+							</>}
+							{n.icon === 'mail' && <>
+								<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+								<polyline points="22,6 12,13 2,6"/>
+							</>}
+							{n.icon === 'columns' && <>
+								<rect x="3" y="3" width="18" height="18" rx="2"/>
+								<path d="M9 3v18"/><path d="M15 3v18"/>
+							</>}
+							{n.icon === 'sparkle' && <>
+								<path d="M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/>
+							</>}
+						</svg>
+						<span class="flex-1">{n.label}</span>
+						{n.count && (
+							<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-accent-wash text-accent font-medium tabular-nums">
+								{n.count}
+							</span>
+						)}
+					</a>
+				))}
+			</nav>
+
+			<div class="mt-auto px-5 py-5 border-t border-hairline">
+				<div class="flex items-center gap-3 mb-3">
+					<div class="w-8 h-8 rounded-full bg-forest text-surface flex items-center justify-center font-semibold text-[13px]">S</div>
+					<div class="min-w-0">
+						<div class="text-xs font-medium text-ink truncate">Sean</div>
+						<div class="text-[10px] text-muted truncate">plaiteplanner@gmail.com</div>
+					</div>
+				</div>
+				<button class="w-full text-left text-xs text-muted hover:text-ink transition-colors">Sign out</button>
+			</div>
+		</aside>
+
+		{/* MAIN */}
+		<main class="ml-60 px-12 py-10 w-full max-w-[1100px]">
+			<header class="mb-14">
+				<p class="font-mono text-[11px] uppercase tracking-[0.16em] text-muted mb-2">Design preview</p>
+				<h1 class="italic text-[60px] font-light tracking-[-0.035em] leading-[1] text-ink mb-3">
+					A warmer, quieter admin.
+				</h1>
+				<p class="text-[15px] text-muted max-w-[540px] leading-relaxed">
+					Cream surfaces, walnut and forest accents, Montserrat italic display paired with
+					Anonymous Pro for mono labels. Everything below is static — nothing wired up yet.
+				</p>
+			</header>
+
+			{/* Palette */}
+			<section class="mb-14">
+				<h2 class="italic text-[28px] font-normal tracking-[-0.02em] text-ink mb-1">Palette</h2>
+				<p class="font-mono text-[12px] text-muted mb-6">Warm neutrals + one walnut accent.</p>
+				<div class="grid grid-cols-3 md:grid-cols-5 gap-4">
+					{palette.map((p) => (
+						<div class="flex flex-col">
+							<div
+								class:list={[
+									'h-20 rounded-md',
+									p.bg,
+									p.border ? 'border border-hairline' : '',
+								]}
+							></div>
+							<div class="mt-2 text-[12px] font-medium text-ink">{p.name}</div>
+							<div class="font-mono text-[11px] text-muted">{p.hex}</div>
+						</div>
+					))}
+				</div>
+			</section>
+
+			{/* Typography */}
+			<section class="mb-14">
+				<h2 class="italic text-[28px] font-normal tracking-[-0.02em] text-ink mb-1">Typography</h2>
+				<p class="font-mono text-[12px] text-muted mb-6">Instrument Serif for display. Geist for interface.</p>
+				<div class="border border-hairline rounded-lg bg-surface divide-y divide-hairline">
+					<div class="grid grid-cols-[140px_1fr] gap-6 px-6 py-5 items-center">
+						<span class="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Display · 60</span>
+						<span class="italic text-[60px] font-light tracking-[-0.035em] leading-[1] text-ink">Health-curated recipes</span>
+					</div>
+					<div class="grid grid-cols-[140px_1fr] gap-6 px-6 py-5 items-center">
+						<span class="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Section · 28</span>
+						<span class="italic text-[28px] font-normal tracking-[-0.02em] text-ink">Today at a glance</span>
+					</div>
+					<div class="grid grid-cols-[140px_1fr] gap-6 px-6 py-5 items-center">
+						<span class="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Metric · 48</span>
+						<span class="italic text-[48px] font-light tracking-[-0.03em] leading-none text-ink tabular-nums">1,284</span>
+					</div>
+					<div class="grid grid-cols-[140px_1fr] gap-6 px-6 py-5 items-center">
+						<span class="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">H3 · 20</span>
+						<span class="text-[20px] font-medium text-ink">Current features</span>
+					</div>
+					<div class="grid grid-cols-[140px_1fr] gap-6 px-6 py-5 items-center">
+						<span class="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Body · 15</span>
+						<span class="text-[15px] text-ink leading-relaxed">A quieter system for triaging work, messages, and the health of the app.</span>
+					</div>
+					<div class="grid grid-cols-[140px_1fr] gap-6 px-6 py-5 items-center">
+						<span class="text-[10px] uppercase tracking-[0.14em] text-muted">Label · 11</span>
+						<span class="text-[11px] uppercase tracking-[0.16em] text-muted">Awaiting response</span>
+					</div>
+				</div>
+			</section>
+
+			{/* Buttons */}
+			<section class="mb-14">
+				<h2 class="italic text-[28px] font-normal tracking-[-0.02em] text-ink mb-1">Buttons</h2>
+				<p class="font-mono text-[12px] text-muted mb-6">Rectangular, no pills, walnut accent with forest for confirmations.</p>
+				<div class="flex flex-wrap gap-3 items-center">
+					<button class="px-5 py-2.5 bg-accent text-surface rounded-md text-sm font-medium hover:bg-ink transition-colors">Primary</button>
+					<button class="px-5 py-2.5 border border-accent text-accent rounded-md text-sm font-medium hover:bg-accent-wash transition-colors">Secondary</button>
+					<button class="px-5 py-2.5 bg-forest text-surface rounded-md text-sm font-medium hover:bg-ink transition-colors">Confirm</button>
+					<button class="px-5 py-2.5 text-ink rounded-md text-sm font-medium hover:bg-sidebar transition-colors">Ghost</button>
+					<button class="px-5 py-2.5 border border-hairline text-ink rounded-md text-sm font-medium hover:border-ink transition-colors">Tertiary</button>
+					<button class="px-5 py-2.5 text-alarm rounded-md text-sm font-medium hover:bg-alarm-wash transition-colors">Destructive</button>
+				</div>
+			</section>
+
+			{/* Success banner — demo mint + forest together */}
+			<section class="mb-14">
+				<h2 class="italic text-[28px] font-normal tracking-[-0.02em] text-ink mb-1">Notices</h2>
+				<p class="font-mono text-[12px] text-muted mb-6">Mint wash backgrounds, forest text for success states.</p>
+				<div class="space-y-3">
+					<div class="bg-mint border border-forest/20 rounded-lg px-5 py-4 flex items-start gap-3">
+						<svg class="w-5 h-5 mt-0.5 text-forest flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<polyline points="20 6 9 17 4 12"/>
+						</svg>
+						<div class="flex-1">
+							<div class="text-[14px] font-medium text-forest">All caught up.</div>
+							<div class="text-[13px] text-forest/80 mt-0.5">No unresponded messages. Crash rate is healthy.</div>
+						</div>
+					</div>
+					<div class="bg-alarm-wash border border-alarm/25 rounded-lg px-5 py-4 flex items-start gap-3">
+						<svg class="w-5 h-5 mt-0.5 text-alarm flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+						</svg>
+						<div class="flex-1">
+							<div class="text-[14px] font-medium text-alarm">Crash rate climbing.</div>
+							<div class="text-[13px] text-alarm/80 mt-0.5">0.42% last 24h, up from 0.18% over 7d average.</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			{/* Metric cards */}
+			<section class="mb-14">
+				<h2 class="italic text-[28px] font-normal tracking-[-0.02em] text-ink mb-1">Metric cards</h2>
+				<p class="font-mono text-[12px] text-muted mb-6">Serif numbers, uppercase labels.</p>
+
+				<div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+					{/* Live — uses forest green pulse */}
+					<div class="bg-surface border border-hairline rounded-lg p-5">
+						<div class="flex items-center justify-between">
+							<span class="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Live users</span>
+							<span class="relative flex h-2 w-2">
+								<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-forest opacity-60"></span>
+								<span class="relative inline-flex rounded-full h-2 w-2 bg-forest"></span>
+							</span>
+						</div>
+						<div class="italic text-[44px] font-light tracking-[-0.03em] leading-none text-ink mt-3 tabular-nums">4</div>
+						<div class="font-mono text-[11px] text-muted mt-2">right now</div>
+					</div>
+					{/* DAU */}
+					<div class="bg-surface border border-hairline rounded-lg p-5">
+						<span class="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">DAU today</span>
+						<div class="italic text-[44px] font-light tracking-[-0.03em] leading-none text-ink mt-3 tabular-nums">127</div>
+						<div class="font-mono text-[11px] text-muted mt-2">1-day active</div>
+					</div>
+					{/* 30d */}
+					<div class="bg-surface border border-hairline rounded-lg p-5">
+						<span class="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">30-day active</span>
+						<div class="italic text-[44px] font-light tracking-[-0.03em] leading-none text-ink mt-3 tabular-nums">1,284</div>
+						<div class="font-mono text-[11px] text-muted mt-2">unique users</div>
+					</div>
+					{/* Crash */}
+					<div class="bg-surface border border-hairline rounded-lg p-5">
+						<span class="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">Crash rate</span>
+						<div class="italic text-[44px] font-light tracking-[-0.03em] leading-none text-ink mt-3 tabular-nums">0.18<span class="font-mono not-italic text-[20px] text-muted">%</span></div>
+						<div class="font-mono text-[11px] text-muted mt-2">7d · 23 / 12.8k</div>
+					</div>
+					{/* Unresponded (alarm state) */}
+					<div class="bg-surface border border-alarm/40 rounded-lg p-5">
+						<span class="font-mono text-[10px] uppercase tracking-[0.14em] text-alarm">Unresponded</span>
+						<div class="text-[40px] font-bold tracking-[-0.02em] leading-none text-alarm mt-3 tabular-nums">3</div>
+						<a class="font-mono text-[11px] text-alarm mt-2 inline-flex items-center gap-1 hover:underline" href="#">Open messages →</a>
+					</div>
+				</div>
+			</section>
+
+			{/* Nav cards */}
+			<section class="mb-14">
+				<h2 class="italic text-[28px] font-normal tracking-[-0.02em] text-ink mb-1">Dashboard nav</h2>
+				<p class="font-mono text-[12px] text-muted mb-6">Hairline borders, serif titles.</p>
+
+				<div class="grid grid-cols-3 gap-4">
+					{navCards.map((c) => (
+						<a
+							href="#"
+							class:list={[
+								'block bg-surface border border-hairline rounded-lg p-6 transition-colors',
+								c.soon ? 'opacity-60 cursor-not-allowed' : 'hover:border-ink',
+							]}
+						>
+							<div class="flex items-baseline justify-between gap-2 mb-2">
+								<h3 class="text-[19px] font-semibold tracking-tight leading-snug text-ink">{c.title}</h3>
+								{c.soon && (
+									<span class="font-mono text-[9px] uppercase tracking-[0.14em] text-muted border border-hairline rounded-full px-2 py-0.5">Soon</span>
+								)}
+							</div>
+							<p class="text-[13px] text-muted leading-relaxed">{c.desc}</p>
+						</a>
+					))}
+				</div>
+			</section>
+
+			{/* Roadmap feature */}
+			<section class="mb-14">
+				<h2 class="italic text-[28px] font-normal tracking-[-0.02em] text-ink mb-1">Roadmap — feature</h2>
+				<p class="font-mono text-[12px] text-muted mb-6">Status + priority + labels, quieter than before.</p>
+
+				<div class="bg-surface border border-hairline rounded-lg overflow-hidden">
+					<div class="px-5 py-4 flex items-center gap-4 border-b border-hairline bg-canvas">
+						<span class="italic text-[20px] font-normal tracking-[-0.01em] text-ink flex-1">Current features</span>
+						<div class="flex items-center gap-2">
+							<div class="h-1 w-32 bg-hairline rounded-full overflow-hidden">
+								<div class="h-full bg-forest" style="width: 67%"></div>
+							</div>
+							<span class="font-mono text-[11px] text-forest font-bold">67%</span>
+						</div>
+						<span class="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">2 / 3 done</span>
+					</div>
+
+					{featureRows.map((f, i) => (
+						<div class:list={['px-5 py-3.5 flex items-center gap-3', i !== featureRows.length - 1 ? 'border-b border-hairline' : '']}>
+							<span class="text-muted/60 text-sm cursor-grab select-none">⋮⋮</span>
+							<span class="text-muted text-sm">▸</span>
+							<span class:list={['font-mono text-[11px] font-bold w-6', f.pColor]}>{f.priority}</span>
+							<span class="flex-1 text-[14.5px] text-ink truncate">{f.title}</span>
+							<span class:list={['font-mono text-[10px] uppercase tracking-[0.12em] px-2 py-1 rounded border', f.sColor]}>
+								{f.status}
+							</span>
+							<div class="flex items-center gap-1">
+								{f.labels.map((l) => (
+									<span class:list={['font-mono text-[10px] px-2 py-0.5 rounded-full', l.c]}>{l.t}</span>
+								))}
+							</div>
+							<div class="flex items-center gap-2 flex-shrink-0">
+								<div class="h-1 w-16 bg-hairline rounded-full overflow-hidden">
+									<div class:list={['h-full', f.done === f.total && f.total > 0 ? 'bg-forest' : 'bg-accent']} style={`width: ${f.total > 0 ? (f.done / f.total) * 100 : 0}%`}></div>
+								</div>
+								<span class="font-mono text-[10px] text-muted w-8 text-right">{f.done}/{f.total}</span>
+							</div>
+						</div>
+					))}
+				</div>
+			</section>
+
+			{/* Messages */}
+			<section class="mb-14">
+				<h2 class="italic text-[28px] font-normal tracking-[-0.02em] text-ink mb-1">Messages</h2>
+				<p class="font-mono text-[12px] text-muted mb-6">Quiet cards, pill-free.</p>
+
+				<div class="space-y-3">
+					{messages.map((m) => (
+						<div
+							class:list={[
+								'border rounded-lg p-5 transition-colors',
+								m.responded
+									? 'border-hairline bg-mint-wash'
+									: 'border-hairline bg-surface',
+							]}
+						>
+							<div class="flex items-center justify-between gap-3 mb-2">
+								<div class="flex items-center gap-3 min-w-0">
+									<span class:list={['text-[15px] font-medium', m.responded ? 'text-muted' : 'text-ink']}>{m.name}</span>
+									<a href={`mailto:${m.email}`} class={`text-[12.5px] ${m.responded ? 'text-forest/70 hover:underline' : 'text-accent hover:underline'}`}>{m.email}</a>
+									{m.responded ? (
+										<span class="font-mono text-[10px] uppercase tracking-[0.14em] text-forest border border-forest/30 bg-mint rounded px-2 py-0.5">✓ Responded</span>
+									) : (
+										<span class="w-2 h-2 rounded-full bg-accent"></span>
+									)}
+								</div>
+								<span class="font-mono text-[11px] text-muted whitespace-nowrap">{m.time}</span>
+							</div>
+							<p class="text-[14px] text-muted leading-relaxed">{m.body}</p>
+						</div>
+					))}
+				</div>
+			</section>
+
+			{/* Activity */}
+			<section class="mb-14">
+				<h2 class="italic text-[28px] font-normal tracking-[-0.02em] text-ink mb-1">Recent activity</h2>
+				<p class="font-mono text-[12px] text-muted mb-6">Merged messages + roadmap.</p>
+
+				<ul class="bg-surface border border-hairline rounded-lg overflow-hidden">
+					{feed.map((f, i) => (
+						<li class:list={['flex items-center gap-3 px-5 py-3.5', i !== feed.length - 1 ? 'border-b border-hairline' : '']}>
+							<span class="w-6 h-6 rounded flex items-center justify-center bg-accent-wash text-accent flex-shrink-0">
+								<svg class="nav-icon" viewBox="0 0 24 24">
+									{f.kind === 'message' && <>
+										<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+										<polyline points="22,6 12,13 2,6"/>
+									</>}
+									{f.kind === 'feature' && <>
+										<polyline points="9 11 12 14 22 4"/>
+										<path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+									</>}
+									{f.kind === 'epic' && <>
+										<rect x="3" y="3" width="18" height="18" rx="2"/>
+										<path d="M9 3v18"/><path d="M15 3v18"/>
+									</>}
+								</svg>
+							</span>
+							<div class="flex-1 min-w-0">
+								<div class="text-[13.5px] text-ink truncate">{f.title}</div>
+								{f.sub && <div class="text-[12px] text-muted truncate mt-0.5">{f.sub}</div>}
+							</div>
+							<span class="font-mono text-[11px] text-muted whitespace-nowrap">{f.time}</span>
+						</li>
+					))}
+				</ul>
+			</section>
+
+			<footer class="pt-8 pb-16 border-t border-hairline">
+				<p class="text-[12.5px] text-muted leading-relaxed">
+					If this lands, I'll migrate the live admin pages to this system.
+					If anything's off — colors too warm, serif too loud, spacing too tight — tell me and I'll adjust before rolling out.
+				</p>
+			</footer>
+		</main>
+	</div>
+</body>
+</html>
+
+<style is:global>
+	.nav-icon {
+		width: 16px;
+		height: 16px;
+		stroke: currentColor;
+		fill: none;
+		stroke-width: 1.75;
+		flex-shrink: 0;
+	}
+</style>

@@ -1,9 +1,5 @@
 import { useState } from 'react';
-import {
-	SortableContext,
-	useSortable,
-	verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
+import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import type { Epic, Feature } from './types';
@@ -23,58 +19,38 @@ interface Props {
 }
 
 export default function EpicSection({
-	epic,
-	features,
-	collapseVersion,
-	onRename,
-	onDelete,
-	onFeatureAdd,
-	onFeatureUpdate,
-	onFeatureDelete,
+	epic, features, collapseVersion, onRename, onDelete, onFeatureAdd, onFeatureUpdate, onFeatureDelete,
 }: Props) {
 	const [name, setName] = useState(epic.name);
 	const sortedFeatures = sortByOrder(features);
 	const featureIds = sortedFeatures.map((f) => `feature-${f.id}`);
 
 	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-		id: `epic-${epic.id}`,
-		data: { type: 'epic' },
+		id: `epic-${epic.id}`, data: { type: 'epic' },
 	});
-
-	// Droppable zone covering the feature list, so empty epics can still receive drops
 	const { setNodeRef: setDropRef, isOver } = useDroppable({
-		id: `epic-drop-${epic.id}`,
-		data: { type: 'epic-drop', epicId: epic.id },
+		id: `epic-drop-${epic.id}`, data: { type: 'epic-drop', epicId: epic.id },
 	});
 
 	const wrapperStyle: React.CSSProperties = {
 		transform: CSS.Transform.toString(transform),
 		transition,
 		opacity: isDragging ? 0.5 : 1,
-		...styles.wrapper,
 	};
 
 	function commitName() {
 		const trimmed = name.trim();
-		if (trimmed && trimmed !== epic.name) {
-			onRename(trimmed);
-		} else {
-			setName(epic.name);
-		}
+		if (trimmed && trimmed !== epic.name) onRename(trimmed);
+		else setName(epic.name);
 	}
 
 	function handleDelete() {
-		const msg =
-			features.length > 0
-				? `Delete "${epic.name}" and its ${features.length} feature${features.length === 1 ? '' : 's'}?`
-				: `Delete "${epic.name}"?`;
+		const msg = features.length > 0
+			? `Delete "${epic.name}" and its ${features.length} feature${features.length === 1 ? '' : 's'}?`
+			: `Delete "${epic.name}"?`;
 		if (confirm(msg)) onDelete();
 	}
 
-	// Aggregate progress across the epic's features (excluding archived).
-	// A feature counts as 100% when status === 'done'; otherwise by its todo
-	// completion ratio. A feature with status !== 'done' AND no todos counts
-	// as 0% (nothing to show yet).
 	const activeFeatures = features.filter((f) => !f.archived);
 	const perFeatureProgress = activeFeatures.map((f) => {
 		if (f.status === 'done') return 1;
@@ -83,21 +59,19 @@ export default function EpicSection({
 		const done = f.todos!.filter((t) => t.done).length;
 		return done / total;
 	});
-	const epicPct =
-		perFeatureProgress.length === 0
-			? 0
-			: Math.round(
-				(perFeatureProgress.reduce((s, p) => s + p, 0) / perFeatureProgress.length) * 100,
-			);
+	const epicPct = perFeatureProgress.length === 0
+		? 0
+		: Math.round((perFeatureProgress.reduce((s, p) => s + p, 0) / perFeatureProgress.length) * 100);
 	const doneFeatures = activeFeatures.filter((f) => f.status === 'done').length;
 
 	return (
-		<div ref={setNodeRef} style={wrapperStyle}>
-			<div style={styles.header}>
+		<div ref={setNodeRef} style={wrapperStyle} className="bg-canvas border border-hairline rounded-lg mb-5 overflow-hidden">
+			<div className="flex items-center gap-3 px-5 py-3 bg-surface border-b border-hairline">
 				<span
 					{...attributes}
 					{...listeners}
-					style={styles.handle}
+					className="cursor-grab text-whisper text-base select-none"
+					style={{ touchAction: 'none' }}
 					title="Drag to reorder epic"
 				>
 					⋮⋮
@@ -109,38 +83,37 @@ export default function EpicSection({
 					onBlur={commitName}
 					onKeyDown={(e) => {
 						if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
-						if (e.key === 'Escape') {
-							setName(epic.name);
-							(e.target as HTMLInputElement).blur();
-						}
+						if (e.key === 'Escape') { setName(epic.name); (e.target as HTMLInputElement).blur(); }
 					}}
-					style={styles.name}
+					className="flex-1 border-0 outline-none bg-transparent italic text-[20px] font-normal tracking-[-0.01em] text-ink font-sans px-1"
 				/>
+
 				{activeFeatures.length > 0 && (
-					<div
-						style={styles.progressWrap}
-						title={`${doneFeatures} of ${activeFeatures.length} features done`}
-					>
-						<div style={styles.progressBar}>
-							<div style={{ ...styles.progressFill, width: `${epicPct}%` }} />
+					<div className="flex items-center gap-2" title={`${doneFeatures} of ${activeFeatures.length} features done`}>
+						<div className="h-1 w-24 bg-hairline rounded-full overflow-hidden">
+							<div className="h-full bg-forest transition-[width]" style={{ width: `${epicPct}%` }} />
 						</div>
-						<span style={styles.progressLabel}>{epicPct}%</span>
+						<span className="font-mono text-[11px] text-forest font-bold">{epicPct}%</span>
 					</div>
 				)}
-				<span style={styles.count}>
+
+				<span className="font-semibold text-[11px] uppercase tracking-[0.1em] text-ink/70 whitespace-nowrap">
 					{doneFeatures}/{activeFeatures.length} done
 				</span>
-				<button type="button" onClick={handleDelete} style={styles.deleteBtn} title="Delete epic">
+
+				<button
+					type="button"
+					onClick={handleDelete}
+					className="bg-transparent border-0 text-whisper hover:text-alarm text-[18px] leading-none cursor-pointer px-1 transition-colors"
+					title="Delete epic"
+				>
 					×
 				</button>
 			</div>
 
 			<div
 				ref={setDropRef}
-				style={{
-					...styles.body,
-					background: isOver ? '#f0fdf4' : 'transparent',
-				}}
+				className={`px-4 py-3 transition-colors ${isOver ? 'bg-mint-wash' : ''}`}
 			>
 				<SortableContext items={featureIds} strategy={verticalListSortingStrategy}>
 					{sortedFeatures.map((feature) => (
@@ -159,86 +132,3 @@ export default function EpicSection({
 		</div>
 	);
 }
-
-const styles: Record<string, React.CSSProperties> = {
-	wrapper: {
-		background: '#f8fafc',
-		border: '1px solid #e2e8f0',
-		borderRadius: '12px',
-		marginBottom: '1.25rem',
-		overflow: 'hidden',
-	},
-	header: {
-		display: 'flex',
-		alignItems: 'center',
-		gap: '0.75rem',
-		padding: '0.85rem 1rem',
-		background: '#fff',
-		borderBottom: '1px solid #e2e8f0',
-	},
-	handle: {
-		cursor: 'grab',
-		color: '#cbd5e1',
-		fontSize: '1rem',
-		userSelect: 'none',
-		touchAction: 'none',
-	},
-	name: {
-		flex: 1,
-		border: 'none',
-		outline: 'none',
-		background: 'transparent',
-		fontSize: '1rem',
-		fontWeight: 600,
-		color: '#1e293b',
-		fontFamily: 'Inter, sans-serif',
-		padding: '0.15rem 0.25rem',
-	},
-	count: {
-		fontSize: '0.75rem',
-		color: '#94a3b8',
-		background: '#f1f5f9',
-		padding: '0.2rem 0.55rem',
-		borderRadius: '10px',
-		fontWeight: 500,
-	},
-	deleteBtn: {
-		background: 'none',
-		border: 'none',
-		color: '#cbd5e1',
-		fontSize: '1.25rem',
-		lineHeight: 1,
-		cursor: 'pointer',
-		padding: '0 0.35rem',
-	},
-	body: {
-		padding: '0.85rem 1rem',
-		transition: 'background 0.15s ease',
-	},
-	progressWrap: {
-		display: 'flex',
-		alignItems: 'center',
-		gap: '0.5rem',
-		flexShrink: 0,
-	},
-	progressBar: {
-		width: '120px',
-		height: '6px',
-		background: '#f1f5f9',
-		borderRadius: '3px',
-		overflow: 'hidden',
-	},
-	progressFill: {
-		height: '100%',
-		background: '#4A9B6B',
-		transition: 'width 0.2s ease',
-	},
-	progressLabel: {
-		fontSize: '0.72rem',
-		color: '#64748b',
-		fontVariantNumeric: 'tabular-nums',
-		fontWeight: 500,
-		minWidth: '2.3rem',
-		textAlign: 'right',
-	},
-};

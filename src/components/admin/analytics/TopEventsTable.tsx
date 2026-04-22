@@ -1,33 +1,26 @@
-interface Event {
-	name: string;
-	count: number;
-	users: number;
-}
-
-interface Props {
-	events: Event[];
-}
+interface Event { name: string; count: number; users: number }
+interface Props { events: Event[] }
 
 export default function TopEventsTable({ events }: Props) {
 	return (
-		<div style={styles.container}>
-			<h3 style={styles.title}>Top Events</h3>
-			<table style={styles.table}>
+		<div className="bg-surface border border-hairline rounded-lg p-6 overflow-auto">
+			<h3 className="italic text-[20px] font-normal tracking-[-0.01em] text-ink mb-4">Top events</h3>
+			<table className="w-full border-collapse text-[13px]">
 				<thead>
 					<tr>
-						<th style={styles.th}>Event</th>
-						<th style={{ ...styles.th, textAlign: 'right' }}>Count</th>
-						<th style={{ ...styles.th, textAlign: 'right' }}>Users</th>
+						<th className="text-left font-semibold text-[11px] uppercase tracking-[0.1em] text-ink/70 pb-2 border-b border-hairline">Event</th>
+						<th className="text-right font-semibold text-[11px] uppercase tracking-[0.1em] text-ink/70 pb-2 border-b border-hairline">Count</th>
+						<th className="text-right font-semibold text-[11px] uppercase tracking-[0.1em] text-ink/70 pb-2 border-b border-hairline">Users</th>
 					</tr>
 				</thead>
 				<tbody>
 					{events.map((event, i) => (
-						<tr key={event.name} style={i % 2 === 0 ? {} : { background: '#f8fafc' }}>
-							<td style={styles.td}>
-								<code style={styles.code}>{event.name}</code>
+						<tr key={event.name} className={i % 2 === 1 ? 'bg-canvas' : ''}>
+							<td className="py-2 px-2 border-b border-hairline/60">
+								<code className="font-mono text-[12px] bg-canvas text-ink px-1.5 py-0.5 rounded">{event.name}</code>
 							</td>
-							<td style={{ ...styles.td, textAlign: 'right' }}>{event.count.toLocaleString()}</td>
-							<td style={{ ...styles.td, textAlign: 'right' }}>{event.users.toLocaleString()}</td>
+							<td className="py-2 px-2 border-b border-hairline/60 text-right font-mono text-[12px] text-ink tabular-nums">{event.count.toLocaleString()}</td>
+							<td className="py-2 px-2 border-b border-hairline/60 text-right font-mono text-[12px] text-muted tabular-nums">{event.users.toLocaleString()}</td>
 						</tr>
 					))}
 				</tbody>
@@ -35,47 +28,3 @@ export default function TopEventsTable({ events }: Props) {
 		</div>
 	);
 }
-
-const styles: Record<string, React.CSSProperties> = {
-	container: {
-		background: '#fff',
-		borderRadius: '12px',
-		padding: '1.5rem',
-		boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-		border: '1px solid #e2e8f0',
-		overflow: 'auto',
-	},
-	title: {
-		fontSize: '1rem',
-		fontWeight: 600,
-		color: '#1e293b',
-		marginBottom: '1rem',
-	},
-	table: {
-		width: '100%',
-		borderCollapse: 'collapse',
-		fontSize: '0.85rem',
-	},
-	th: {
-		textAlign: 'left',
-		padding: '0.6rem 0.75rem',
-		borderBottom: '2px solid #e2e8f0',
-		color: '#64748b',
-		fontWeight: 600,
-		fontSize: '0.75rem',
-		textTransform: 'uppercase',
-		letterSpacing: '0.04em',
-	},
-	td: {
-		padding: '0.6rem 0.75rem',
-		borderBottom: '1px solid #f1f5f9',
-		color: '#334155',
-	},
-	code: {
-		background: '#f1f5f9',
-		padding: '0.15rem 0.4rem',
-		borderRadius: '4px',
-		fontSize: '0.8rem',
-		fontFamily: 'monospace',
-	},
-};

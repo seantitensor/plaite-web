@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@theme {
+	/* Warm neutral palette — walnut / cream / bone */
+	--color-canvas: #faf7f2;        /* page bg, heavy cream */
+	--color-surface: #ffffff;       /* cards, quiet lift */
+	--color-sidebar: #f1ebdf;       /* tan, distinct from canvas */
+	--color-hairline: #e8dfcf;      /* warm 1px borders */
+	--color-ink: #2b251d;           /* body text, near-black */
+	--color-muted: #7a6f5e;         /* secondary text, warm grey */
+	--color-whisper: #a8a095;       /* tertiary, faintest */
+
+	/* Primary accent — walnut/sienna */
+	--color-accent: #8b5a2b;
+	--color-accent-soft: #c49a6c;
+	--color-accent-wash: rgba(139, 90, 43, 0.08);
+
+	/* Secondary — warm greens (botanical, not startup emerald) */
+	--color-mint: #d5e1ce;            /* pale sage-mint, herb garden */
+	--color-mint-wash: rgba(213, 225, 206, 0.5);
+	--color-forest: #3e5544;          /* deep bottle/wax-jacket green */
+	--color-forest-wash: rgba(62, 85, 68, 0.08);
+	--color-live: #4a9b6b;            /* vivid plaite-brand green for realtime pulse */
+
+	/* Status — warm, never traffic-light */
+	--color-alarm: #9b4a3a;           /* oxblood, not red */
+	--color-alarm-wash: rgba(155, 74, 58, 0.08);
+	--color-rest: #6b6455;            /* muted for "idle" */
+	--color-progress: #8b5a2b;        /* in-progress = walnut */
+	--color-complete: #3e5544;        /* done = forest (matches --color-forest) */
+
+	/* Typography — Montserrat for display + UI labels,
+	   JetBrains Mono (crisp screen hinting) for data-only moments:
+	   hex codes, percentages, timestamps, priority markers */
+	--font-display: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+	--font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+	--font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+
+	/* Radii — tight and confident, no pills */
+	--radius-sm: 4px;
+	--radius-md: 6px;
+	--radius-lg: 10px;
+
+	/* Shadows — barely there */
+	--shadow-subtle: 0 1px 2px rgba(43, 37, 29, 0.04);
+	--shadow-lift: 0 6px 20px rgba(43, 37, 29, 0.06);
+}
+
+/* Pronounced pulse for the realtime live-users indicator.
+   Larger scale + longer duration than Tailwind's animate-ping. */
+@keyframes live-pulse {
+	0%   { transform: scale(1);   opacity: 0.85; }
+	80%  { transform: scale(2.5); opacity: 0; }
+	100% { transform: scale(2.5); opacity: 0; }
+}
+
+.live-pulse {
+	animation: live-pulse 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}

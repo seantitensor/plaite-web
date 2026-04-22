@@ -19,7 +19,6 @@ export default function OverviewStats() {
 	const [liveUsers, setLiveUsers] = useState<number | null>(null);
 	const [liveError, setLiveError] = useState(false);
 
-	// One-shot fetches on mount.
 	useEffect(() => {
 		let cancelled = false;
 		(async () => {
@@ -42,7 +41,6 @@ export default function OverviewStats() {
 		};
 	}, []);
 
-	// Realtime polling — matches RealtimeBadge pattern.
 	useEffect(() => {
 		let cancelled = false;
 		async function tick() {
@@ -70,124 +68,96 @@ export default function OverviewStats() {
 	const active30d = overview?.totals?.activeUsers;
 	const crashRate = crashes?.totals?.rate;
 	const crashRateHigh = typeof crashRate === 'number' && crashRate > 0.01;
+	const unrespondedHigh = typeof unresponded === 'number' && unresponded > 0;
 
 	return (
-		<div style={styles.grid}>
-			<div style={styles.card}>
-				<div style={styles.headerRow}>
-					<span style={styles.cardTitle}>Live users</span>
-					<span
-						style={{
-							...styles.dot,
-							background: liveError ? '#94a3b8' : liveUsers && liveUsers > 0 ? '#22c55e' : '#cbd5e1',
-						}}
-					/>
+		<div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3">
+			{/* Live users */}
+			<Card>
+				<div className="flex items-center justify-between">
+					<Label>Live users</Label>
+					<span className="relative flex h-2 w-2">
+						<span className="live-pulse absolute inline-flex h-full w-full rounded-full bg-live"></span>
+						<span className="relative inline-flex rounded-full h-2 w-2 bg-live"></span>
+					</span>
 				</div>
-				<div style={styles.value}>
+				<Value>
 					{liveError ? '—' : liveUsers === null ? '…' : liveUsers.toLocaleString()}
-				</div>
-				<div style={styles.sub}>right now</div>
-			</div>
+				</Value>
+				<Sub>right now</Sub>
+			</Card>
 
-			<div style={styles.card}>
-				<div style={styles.cardTitle}>DAU today</div>
-				<div style={styles.value}>
-					{loading ? '…' : typeof dau === 'number' ? dau.toLocaleString() : '—'}
-				</div>
-				<div style={styles.sub}>1-day active users</div>
-			</div>
+			{/* DAU */}
+			<Card>
+				<Label>DAU today</Label>
+				<Value>{loading ? '…' : typeof dau === 'number' ? dau.toLocaleString() : '—'}</Value>
+				<Sub>1-day active users</Sub>
+			</Card>
 
-			<div style={styles.card}>
-				<div style={styles.cardTitle}>30-day active</div>
-				<div style={styles.value}>
-					{loading ? '…' : typeof active30d === 'number' ? active30d.toLocaleString() : '—'}
-				</div>
-				<div style={styles.sub}>unique users, last 30d</div>
-			</div>
+			{/* 30d */}
+			<Card>
+				<Label>30-day active</Label>
+				<Value>{loading ? '…' : typeof active30d === 'number' ? active30d.toLocaleString() : '—'}</Value>
+				<Sub>unique users</Sub>
+			</Card>
 
-			<div style={styles.card}>
-				<div style={styles.cardTitle}>Crash rate · 7d</div>
-				<div style={{ ...styles.value, color: crashRateHigh ? '#dc2626' : '#1e293b' }}>
+			{/* Crash rate */}
+			<Card tone={crashRateHigh ? 'alarm' : 'default'}>
+				<Label tone={crashRateHigh ? 'alarm' : 'default'}>Crash rate · 7d</Label>
+				<Value tone={crashRateHigh ? 'alarm' : 'default'}>
 					{loading
 						? '…'
 						: typeof crashRate === 'number'
-							? `${(crashRate * 100).toFixed(2)}%`
+							? <>{Math.round(crashRate * 100)}<span className="font-mono text-[18px] text-muted ml-0.5 font-normal">%</span></>
 							: '—'}
-				</div>
-				<div style={styles.sub}>
+				</Value>
+				<Sub>
 					{crashes
 						? `${crashes.totals.crashes.toLocaleString()} of ${crashes.totals.sessions.toLocaleString()} sessions`
 						: ''}
-				</div>
-			</div>
+				</Sub>
+			</Card>
 
-			<div style={styles.card}>
-				<div style={styles.cardTitle}>Unresponded</div>
-				<div
-					style={{
-						...styles.value,
-						color: unresponded && unresponded > 0 ? '#b45309' : '#1e293b',
-					}}
-				>
+			{/* Unresponded */}
+			<Card tone={unrespondedHigh ? 'alarm' : 'default'}>
+				<Label tone={unrespondedHigh ? 'alarm' : 'default'}>Unresponded</Label>
+				<Value tone={unrespondedHigh ? 'alarm' : 'default'}>
 					{loading ? '…' : unresponded === null ? '—' : unresponded.toLocaleString()}
-				</div>
-				<div style={styles.sub}>
-					<a href="/admin/messages" style={styles.link}>
-						{unresponded && unresponded > 0 ? 'Open messages →' : 'All caught up'}
+				</Value>
+				<Sub>
+					<a href="/admin/messages" className={`${unrespondedHigh ? 'text-alarm' : 'text-forest'} hover:underline no-underline`}>
+						{unrespondedHigh ? 'Open messages →' : 'All caught up'}
 					</a>
-				</div>
-			</div>
+				</Sub>
+			</Card>
 		</div>
 	);
 }
 
-const styles: Record<string, React.CSSProperties> = {
-	grid: {
-		display: 'grid',
-		gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
-		gap: '1rem',
-		marginBottom: '2rem',
-	},
-	card: {
-		background: '#fff',
-		borderRadius: '12px',
-		padding: '1.1rem 1.25rem',
-		border: '1px solid #e2e8f0',
-		boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-	},
-	headerRow: {
-		display: 'flex',
-		alignItems: 'center',
-		justifyContent: 'space-between',
-	},
-	cardTitle: {
-		fontSize: '0.75rem',
-		fontWeight: 600,
-		color: '#64748b',
-		textTransform: 'uppercase',
-		letterSpacing: '0.04em',
-	},
-	value: {
-		fontSize: '1.75rem',
-		fontWeight: 700,
-		color: '#1e293b',
-		marginTop: '0.25rem',
-		lineHeight: 1.15,
-	},
-	sub: {
-		fontSize: '0.72rem',
-		color: '#94a3b8',
-		marginTop: '0.35rem',
-	},
-	dot: {
-		width: '8px',
-		height: '8px',
-		borderRadius: '50%',
-		display: 'inline-block',
-	},
-	link: {
-		color: '#4A9B6B',
-		textDecoration: 'none',
-		fontWeight: 500,
-	},
-};
+function Card({ children, tone = 'default' }: { children: React.ReactNode; tone?: 'default' | 'alarm' }) {
+	return (
+		<div className={`bg-surface border rounded-lg p-5 ${tone === 'alarm' ? 'border-alarm/40' : 'border-hairline'}`}>
+			{children}
+		</div>
+	);
+}
+
+function Label({ children, tone = 'default' }: { children: React.ReactNode; tone?: 'default' | 'alarm' }) {
+	return (
+		<span className={`font-semibold text-[11px] uppercase tracking-[0.1em] ${tone === 'alarm' ? 'text-alarm' : 'text-ink/70'}`}>
+			{children}
+		</span>
+	);
+}
+
+function Value({ children, tone = 'default' }: { children: React.ReactNode; tone?: 'default' | 'alarm' }) {
+	return (
+		<div className={`text-[38px] font-medium tracking-[-0.02em] leading-none mt-3 tabular-nums ${tone === 'alarm' ? 'text-alarm' : 'text-ink'}`}>
+			{children}
+		</div>
+	);
+}
+
+function Sub({ children }: { children: React.ReactNode }) {
+	return <div className="font-mono text-[11px] text-muted mt-2">{children}</div>;
+}

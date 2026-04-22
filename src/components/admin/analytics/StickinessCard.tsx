@@ -1,5 +1,3 @@
-import { formatPercent } from '../../../lib/format';
-
 interface Props {
 	dau: number;
 	mau: number;
@@ -7,44 +5,17 @@ interface Props {
 
 export default function StickinessCard({ dau, mau }: Props) {
 	const ratio = mau > 0 ? dau / mau : 0;
+	const pct = `${Math.round(ratio * 100)}`;
 
 	return (
-		<div style={styles.card}>
-			<div style={styles.icon}>🔥</div>
-			<div style={styles.value}>{formatPercent(ratio, 0)}</div>
-			<div style={styles.title}>Stickiness</div>
-			<div style={styles.sub}>DAU / MAU · {dau.toLocaleString()} of {mau.toLocaleString()}</div>
+		<div className="bg-surface border border-hairline rounded-lg p-5">
+			<div className="font-semibold text-[11px] uppercase tracking-[0.1em] text-ink/70">Stickiness</div>
+			<div className="text-[38px] font-medium tracking-[-0.02em] leading-none text-ink mt-3 tabular-nums">
+				{pct}<span className="font-mono text-[18px] text-muted ml-0.5 font-normal">%</span>
+			</div>
+			<div className="font-mono text-[11px] text-muted mt-2">
+				DAU / MAU · {dau.toLocaleString()} of {mau.toLocaleString()}
+			</div>
 		</div>
 	);
 }
-
-const styles: Record<string, React.CSSProperties> = {
-	card: {
-		background: '#fff',
-		borderRadius: '12px',
-		padding: '1.5rem',
-		boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-		border: '1px solid #e2e8f0',
-	},
-	icon: {
-		fontSize: '1.5rem',
-		marginBottom: '0.5rem',
-	},
-	value: {
-		fontSize: '2rem',
-		fontWeight: 700,
-		color: '#1e293b',
-		lineHeight: 1.2,
-	},
-	title: {
-		fontSize: '0.85rem',
-		color: '#64748b',
-		marginTop: '0.25rem',
-		fontWeight: 500,
-	},
-	sub: {
-		fontSize: '0.75rem',
-		color: '#94a3b8',
-		marginTop: '0.25rem',
-	},
-};

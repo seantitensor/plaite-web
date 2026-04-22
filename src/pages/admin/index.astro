@@ -2,165 +2,99 @@
 import AdminLayout from '../../components/admin/AdminLayout.astro';
 import OverviewStats from '../../components/admin/overview/OverviewStats';
 import RecentActivity from '../../components/admin/overview/RecentActivity';
+
+const cards = [
+	{
+		href: '/admin/analytics',
+		title: 'Analytics',
+		desc: 'Users, sessions, retention, funnels, and geographic distribution from Firebase Analytics.',
+		icon: 'chart',
+	},
+	{
+		href: '/admin/history',
+		title: 'History',
+		desc: 'Long-horizon trends for DAU, MAU, stickiness, crash rate over 30d / 90d / 1y / All time.',
+		icon: 'clock',
+	},
+	{
+		href: '/admin/messages',
+		title: 'Messages',
+		desc: 'Contact-form submissions. Mark responded, reply via email, or send to the roadmap.',
+		icon: 'mail',
+	},
+	{
+		href: '/admin/board',
+		title: 'Roadmap',
+		desc: 'Organize work into epics. Each feature has status, priority, labels, and todos.',
+		icon: 'columns',
+	},
+	{
+		title: 'Recipe Processing',
+		desc: 'Ingest, enrich, and moderate recipes — tagging, nutrition, duplicate detection, images. In development.',
+		icon: 'bowl',
+		soon: true,
+	},
+];
 ---
 
 <AdminLayout title="Dashboard" activePage="overview">
-	<div class="overview">
-		<h1>Dashboard</h1>
-		<p class="subtitle">Welcome to the plaite admin dashboard.</p>
+	<header class="mb-10">
+		<p class="font-semibold text-[11px] uppercase tracking-[0.14em] text-ink/70 mb-2">Dashboard</p>
+		<h1 class="italic text-[48px] font-light tracking-[-0.03em] leading-[1.05] text-ink">
+			What's happening in plaite.
+		</h1>
+	</header>
 
-		<OverviewStats client:load />
+	<OverviewStats client:load />
 
-		<div class="cards">
-			<a href="/admin/analytics" class="card">
-				<div class="card-icon">
-					<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4A9B6B" stroke-width="2">
-						<path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/>
-					</svg>
-				</div>
-				<h2>Analytics</h2>
-				<p>View active users, sessions, retention, funnels, and geographic distribution from Firebase Analytics.</p>
-			</a>
-
-			<a href="/admin/history" class="card">
-				<div class="card-icon">
-					<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4A9B6B" stroke-width="2">
-						<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-					</svg>
-				</div>
-				<h2>History</h2>
-				<p>Long-horizon trends for DAU, MAU, stickiness, sessions, screen views, crash rate, and more over 30d / 90d / 1y / All time.</p>
-			</a>
-
-			<a href="/admin/messages" class="card">
-				<div class="card-icon">
-					<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4A9B6B" stroke-width="2">
-						<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-						<polyline points="22,6 12,13 2,6"/>
-					</svg>
-				</div>
-				<h2>Messages</h2>
-				<p>Contact-form submissions from plaite.io. Mark as read, reply via email, or delete once handled.</p>
-			</a>
-
-			<a href="/admin/board" class="card">
-				<div class="card-icon">
-					<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4A9B6B" stroke-width="2">
-						<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/>
-					</svg>
-				</div>
-				<h2>Roadmap</h2>
-				<p>Organize work into epics like "Current Features" or "Next Release". Each feature has its own todo checklist and auto-computed progress.</p>
-			</a>
-
-			<div class="card card-disabled" aria-disabled="true">
-				<div class="card-icon">
-					<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
-						<path d="M6 2l1 6h10l1-6"/><path d="M5 8h14l-1 14H6L5 8z"/><path d="M10 12v6"/><path d="M14 12v6"/>
-					</svg>
-				</div>
-				<h2>
-					Recipe Processing
-					<span class="badge-soon">Coming Soon</span>
-				</h2>
-				<p>Ingest, enrich, and moderate recipes coming into the app — tagging, nutrition, duplicate detection, and image processing. In development.</p>
-			</div>
+	<section class="mt-14">
+		<h2 class="italic text-[24px] font-normal tracking-[-0.02em] text-ink mb-4">Sections</h2>
+		<div class="grid grid-cols-3 gap-4 max-lg:grid-cols-2 max-md:grid-cols-1">
+			{cards.map((c) => {
+				const Tag = c.soon ? 'div' : 'a';
+				return (
+					<Tag
+						{...(c.soon ? { 'aria-disabled': 'true' } : { href: c.href })}
+						class:list={[
+							'group bg-surface border border-hairline rounded-lg p-6 transition-all no-underline flex flex-col',
+							c.soon ? 'opacity-60 cursor-not-allowed' : 'hover:border-ink hover:-translate-y-0.5',
+						]}
+					>
+						<div class="flex items-baseline justify-between gap-2 mb-3">
+							<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" class={c.soon ? 'text-muted' : 'text-accent'}>
+								{c.icon === 'chart' && <>
+									<path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/>
+								</>}
+								{c.icon === 'clock' && <>
+									<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+								</>}
+								{c.icon === 'mail' && <>
+									<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+									<polyline points="22,6 12,13 2,6"/>
+								</>}
+								{c.icon === 'columns' && <>
+									<rect x="3" y="3" width="18" height="18" rx="2"/>
+									<path d="M9 3v18"/><path d="M15 3v18"/>
+								</>}
+								{c.icon === 'bowl' && <>
+									<path d="M6 2l1 6h10l1-6"/><path d="M5 8h14l-1 14H6L5 8z"/>
+								</>}
+							</svg>
+							{c.soon && (
+								<span class="font-mono text-[9px] uppercase tracking-[0.14em] text-muted border border-hairline rounded-full px-2 py-0.5">Soon</span>
+							)}
+						</div>
+						<h3 class:list={['italic text-[22px] font-normal tracking-[-0.01em] leading-none mb-2', c.soon ? 'text-muted' : 'text-ink']}>
+							{c.title}
+						</h3>
+						<p class:list={['text-[13px] leading-relaxed', c.soon ? 'text-muted' : 'text-muted']}>
+							{c.desc}
+						</p>
+					</Tag>
+				);
+			})}
 		</div>
+	</section>
 
-		<RecentActivity client:load />
-	</div>
+	<RecentActivity client:load />
 </AdminLayout>
-
-<style>
-	.overview h1 {
-		font-size: 1.5rem;
-		font-weight: 700;
-		color: #1e293b;
-		margin-bottom: 0.25rem;
-	}
-
-	.subtitle {
-		color: #64748b;
-		font-size: 0.95rem;
-		margin-bottom: 2rem;
-	}
-
-	.cards {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 1.5rem;
-		max-width: 1100px;
-	}
-
-	.card {
-		background: #fff;
-		border-radius: 12px;
-		padding: 2rem;
-		border: 1px solid #e2e8f0;
-		text-decoration: none;
-		transition: box-shadow 0.2s, transform 0.2s;
-	}
-
-	.card:hover {
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-		transform: translateY(-2px);
-	}
-
-	.card-icon {
-		margin-bottom: 1rem;
-	}
-
-	.card h2 {
-		font-size: 1.1rem;
-		font-weight: 700;
-		color: #1e293b;
-		margin-bottom: 0.5rem;
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		flex-wrap: wrap;
-	}
-
-	.card p {
-		font-size: 0.85rem;
-		color: #64748b;
-		line-height: 1.5;
-	}
-
-	.card-disabled {
-		cursor: not-allowed;
-		opacity: 0.7;
-	}
-
-	.card-disabled:hover {
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-		transform: none;
-	}
-
-	.card-disabled h2 {
-		color: #64748b;
-	}
-
-	.badge-soon {
-		font-size: 0.62rem;
-		font-weight: 700;
-		letter-spacing: 0.05em;
-		text-transform: uppercase;
-		background: #f1f5f9;
-		color: #64748b;
-		padding: 0.15rem 0.5rem;
-		border-radius: 999px;
-	}
-
-	@media (max-width: 900px) {
-		.cards {
-			grid-template-columns: repeat(2, 1fr);
-		}
-	}
-
-	@media (max-width: 600px) {
-		.cards {
-			grid-template-columns: 1fr;
-		}
-	}
-</style>

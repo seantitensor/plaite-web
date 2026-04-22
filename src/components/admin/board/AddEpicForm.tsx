@@ -22,43 +22,19 @@ export default function AddEpicForm({ onAdd }: Props) {
 	}
 
 	return (
-		<form onSubmit={handleSubmit} style={styles.form}>
-			<span style={styles.plus}>+</span>
+		<form
+			onSubmit={handleSubmit}
+			className="flex items-center gap-2 px-4 py-3 bg-surface border border-dashed border-hairline rounded-lg mt-4 hover:border-muted transition-colors"
+		>
+			<span className="text-muted text-[15px] font-medium leading-none">+</span>
 			<input
 				type="text"
 				value={name}
 				onChange={(e) => setName(e.target.value)}
 				placeholder="New epic (e.g. Current Features)"
 				disabled={loading}
-				style={styles.input}
+				className="flex-1 border-0 outline-none bg-transparent text-[14px] text-ink font-sans placeholder:text-muted"
 			/>
 		</form>
 	);
 }
-
-const styles: Record<string, React.CSSProperties> = {
-	form: {
-		display: 'flex',
-		alignItems: 'center',
-		gap: '0.5rem',
-		padding: '0.75rem 1rem',
-		background: '#fff',
-		border: '1px dashed #cbd5e1',
-		borderRadius: '8px',
-		marginTop: '1rem',
-	},
-	plus: {
-		color: '#94a3b8',
-		fontSize: '1.1rem',
-		fontWeight: 600,
-	},
-	input: {
-		flex: 1,
-		border: 'none',
-		outline: 'none',
-		background: 'transparent',
-		fontSize: '0.9rem',
-		color: '#1e293b',
-		fontFamily: 'Inter, sans-serif',
-	},
-};

@@ -11,22 +11,15 @@ const ranges = [
 
 export default function DateRangePicker({ value, onChange }: Props) {
 	return (
-		<div style={{ display: 'flex', gap: '0.5rem' }}>
-			{ranges.map((r) => (
+		<div className="inline-flex bg-surface border border-hairline rounded-md overflow-hidden">
+			{ranges.map((r, i) => (
 				<button
 					key={r.value}
+					type="button"
 					onClick={() => onChange(r.value)}
-					style={{
-						padding: '0.4rem 1rem',
-						borderRadius: '6px',
-						border: 'none',
-						background: value === r.value ? '#4A9B6B' : '#e2e8f0',
-						color: value === r.value ? '#fff' : '#475569',
-						fontWeight: 600,
-						fontSize: '0.8rem',
-						cursor: 'pointer',
-						fontFamily: 'Inter, sans-serif',
-					}}
+					className={`px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.12em] transition-colors ${
+						value === r.value ? 'bg-accent text-surface' : 'text-muted hover:text-ink hover:bg-mint-wash'
+					} ${i !== 0 ? 'border-l border-hairline' : ''}`}
 				>
 					{r.label}
 				</button>

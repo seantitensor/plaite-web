@@ -1,4 +1,6 @@
 ---
+import '../../styles/admin-theme.css';
+
 interface Props {
 	title?: string;
 	activePage?: 'overview' | 'analytics' | 'history' | 'messages' | 'board';
@@ -6,6 +8,14 @@ interface Props {
 
 const { title = 'Admin Dashboard', activePage = 'overview' } = Astro.props;
 const user = Astro.locals.user;
+
+const navItems = [
+	{ id: 'overview',  href: '/admin',           label: 'Overview',  icon: 'grid' },
+	{ id: 'analytics', href: '/admin/analytics', label: 'Analytics', icon: 'chart' },
+	{ id: 'history',   href: '/admin/history',   label: 'History',   icon: 'clock' },
+	{ id: 'messages',  href: '/admin/messages',  label: 'Messages',  icon: 'mail' },
+	{ id: 'board',     href: '/admin/board',     label: 'Roadmap',   icon: 'columns' },
+];
 ---
 
 <!doctype html>
@@ -13,248 +23,102 @@ const user = Astro.locals.user;
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-		<title>{title} - plaite admin</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700&display=swap"
+			rel="stylesheet"
+		/>
+		<title>{title} · plaite admin</title>
 	</head>
-	<body>
-		<div class="admin-shell">
-			<aside class="sidebar">
-				<div class="sidebar-header">
-					<a href="/admin" class="sidebar-logo">plaite</a>
-					<span class="sidebar-badge">admin</span>
+	<body class="bg-canvas text-ink font-sans antialiased min-h-screen m-0">
+		<div class="flex">
+			<aside class="w-60 bg-sidebar border-r border-hairline min-h-screen fixed top-0 left-0 flex flex-col">
+				<div class="px-6 pt-7 pb-6 flex items-baseline gap-2.5">
+					<a href="/admin" class="italic text-[30px] font-semibold tracking-[-0.02em] leading-none text-forest no-underline">plaite</a>
+					<span class="font-semibold text-[10px] uppercase tracking-[0.14em] text-ink/70">admin</span>
 				</div>
 
-				<nav class="sidebar-nav">
-					<a href="/admin" class={`nav-item ${activePage === 'overview' ? 'active' : ''}`}>
-						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-						Overview
-					</a>
-					<a href="/admin/analytics" class={`nav-item ${activePage === 'analytics' ? 'active' : ''}`}>
-						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
-						Analytics
-					</a>
-					<a href="/admin/history" class={`nav-item ${activePage === 'history' ? 'active' : ''}`}>
-						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-						History
-					</a>
-					<a href="/admin/messages" class={`nav-item ${activePage === 'messages' ? 'active' : ''}`}>
-						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-						Messages
-					</a>
-					<a href="/admin/board" class={`nav-item ${activePage === 'board' ? 'active' : ''}`}>
-						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>
-						Roadmap
-					</a>
+				<nav class="px-3 flex flex-col gap-0.5">
+					{navItems.map((n) => {
+						const active = activePage === n.id;
+						return (
+							<a
+								href={n.href}
+								class:list={[
+									'group relative flex items-center gap-2.5 px-3 py-2 rounded-md text-[13.5px] transition-colors no-underline',
+									active
+										? 'text-ink font-medium bg-surface'
+										: 'text-muted hover:text-ink hover:bg-mint-wash',
+								]}
+							>
+								{active && <span class="absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-full bg-accent"></span>}
+								<svg class="admin-nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+									{n.icon === 'grid' && <>
+										<rect x="3" y="3" width="7" height="7" rx="1"/>
+										<rect x="14" y="3" width="7" height="7" rx="1"/>
+										<rect x="3" y="14" width="7" height="7" rx="1"/>
+										<rect x="14" y="14" width="7" height="7" rx="1"/>
+									</>}
+									{n.icon === 'chart' && <>
+										<path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/>
+									</>}
+									{n.icon === 'clock' && <>
+										<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+									</>}
+									{n.icon === 'mail' && <>
+										<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+										<polyline points="22,6 12,13 2,6"/>
+									</>}
+									{n.icon === 'columns' && <>
+										<rect x="3" y="3" width="18" height="18" rx="2"/>
+										<path d="M9 3v18"/><path d="M15 3v18"/>
+									</>}
+								</svg>
+								<span class="flex-1">{n.label}</span>
+							</a>
+						);
+					})}
 				</nav>
 
-				<div class="sidebar-footer">
+				<div class="mt-auto px-5 py-5 border-t border-hairline">
 					{user && (
-						<div class="user-info">
-							<div class="user-avatar">{user.name?.charAt(0).toUpperCase() || 'A'}</div>
-							<div class="user-details">
-								<div class="user-name">{user.name}</div>
-								<div class="user-email">{user.email}</div>
+						<div class="flex items-center gap-3 mb-3 min-w-0">
+							<div class="w-8 h-8 rounded-full bg-forest text-surface flex items-center justify-center font-semibold text-[13px] flex-shrink-0">
+								{user.name?.charAt(0).toUpperCase() || 'A'}
+							</div>
+							<div class="min-w-0 flex-1">
+								<div class="text-xs font-medium text-ink truncate">{user.name}</div>
+								<div class="font-mono text-[10px] text-muted truncate">{user.email}</div>
 							</div>
 						</div>
 					)}
-					<form method="POST" action="/api/admin/auth/logout" class="logout-form">
-						<button type="submit" class="logout-btn">Sign Out</button>
+					<form method="POST" action="/api/admin/auth/logout" class="m-0">
+						<button
+							type="submit"
+							class="w-full text-left text-xs text-muted hover:text-alarm transition-colors bg-transparent border-0 cursor-pointer p-0"
+						>
+							Sign out
+						</button>
 					</form>
 				</div>
 			</aside>
 
-			<main class="main-content">
+			<main class="ml-60 px-10 py-10 w-full max-w-[1180px]">
 				<slot />
 			</main>
 		</div>
 	</body>
 </html>
 
-<style>
-	* {
-		margin: 0;
-		padding: 0;
-		box-sizing: border-box;
+<style is:global>
+	.admin-nav-icon {
+		width: 16px;
+		height: 16px;
+		stroke: currentColor;
+		fill: none;
+		stroke-width: 1.75;
+		flex-shrink: 0;
 	}
-
-	body {
-		font-family: 'Inter', sans-serif;
-		background: #f8fafc;
-		color: #1e293b;
-		min-height: 100vh;
-	}
-
-	.admin-shell {
-		display: flex;
-		min-height: 100vh;
-	}
-
-	.sidebar {
-		width: 240px;
-		background: #1e293b;
-		color: #cbd5e1;
-		display: flex;
-		flex-direction: column;
-		position: fixed;
-		top: 0;
-		left: 0;
-		bottom: 0;
-		z-index: 100;
-	}
-
-	.sidebar-header {
-		padding: 1.5rem;
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		border-bottom: 1px solid #334155;
-	}
-
-	.sidebar-logo {
-		font-size: 1.5rem;
-		font-weight: 700;
-		color: #4ade80;
-		text-decoration: none;
-	}
-
-	.sidebar-badge {
-		font-size: 0.65rem;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		background: #334155;
-		padding: 0.2rem 0.5rem;
-		border-radius: 4px;
-		color: #94a3b8;
-	}
-
-	.sidebar-nav {
-		padding: 1rem 0.75rem;
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-	}
-
-	.nav-item {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		padding: 0.65rem 0.75rem;
-		border-radius: 8px;
-		color: #94a3b8;
-		text-decoration: none;
-		font-size: 0.9rem;
-		font-weight: 500;
-		transition: all 0.15s ease;
-	}
-
-	.nav-item:hover {
-		background: #334155;
-		color: #e2e8f0;
-	}
-
-	.nav-item.active {
-		background: #4A9B6B;
-		color: #fff;
-	}
-
-	.sidebar-footer {
-		padding: 1rem;
-		border-top: 1px solid #334155;
-	}
-
-	.user-info {
-		display: flex;
-		align-items: center;
-		gap: 0.6rem;
-		margin-bottom: 0.75rem;
-	}
-
-	.user-avatar {
-		width: 32px;
-		height: 32px;
-		border-radius: 50%;
-		background: #4A9B6B;
-		color: #fff;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 0.8rem;
-		font-weight: 600;
-	}
-
-	.user-details {
-		overflow: hidden;
-	}
-
-	.user-name {
-		font-size: 0.8rem;
-		font-weight: 600;
-		color: #e2e8f0;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.user-email {
-		font-size: 0.7rem;
-		color: #64748b;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.logout-form {
-		display: block;
-		margin: 0;
-	}
-
-	.logout-btn {
-		display: block;
-		width: 100%;
-		text-align: center;
-		padding: 0.5rem;
-		border: none;
-		background: transparent;
-		border-radius: 6px;
-		color: #94a3b8;
-		text-decoration: none;
-		font-family: inherit;
-		font-size: 0.8rem;
-		font-weight: 500;
-		cursor: pointer;
-		transition: all 0.15s;
-	}
-
-	.logout-btn:hover {
-		background: #334155;
-		color: #f87171;
-	}
-
-	.main-content {
-		flex: 1;
-		margin-left: 240px;
-		padding: 2rem;
-		min-height: 100vh;
-	}
-
-	@media (max-width: 768px) {
-		.sidebar {
-			width: 60px;
-		}
-		.sidebar-logo, .sidebar-badge, .nav-item span, .user-details, .logout-btn {
-			display: none;
-		}
-		.sidebar-header {
-			justify-content: center;
-		}
-		.nav-item {
-			justify-content: center;
-			padding: 0.75rem;
-		}
-		.main-content {
-			margin-left: 60px;
-		}
-	}
+	a { text-decoration: none; }
 </style>

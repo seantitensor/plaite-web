@@ -39,117 +39,67 @@ export default function LoginForm() {
 	}
 
 	return (
-		<div style={styles.container}>
-			<div style={styles.card}>
-				<h1 style={styles.logo}>plaite</h1>
-				<h2 style={styles.title}>Admin Login</h2>
-
-				{error && <div style={styles.error}>{error}</div>}
-
-				<form onSubmit={handleSubmit} style={styles.form}>
-					<div style={styles.field}>
-						<label style={styles.label}>Email</label>
-						<input
-							type="email"
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-							required
-							style={styles.input}
-							placeholder="admin@plaite.io"
-						/>
+		<div className="min-h-screen flex items-center justify-center px-6">
+			<div className="w-full max-w-[380px]">
+				<div className="text-center mb-10">
+					<div className="flex items-baseline justify-center gap-2 mb-1">
+						<span className="italic text-[44px] font-semibold tracking-[-0.02em] leading-none text-forest">plaite</span>
+						<span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">admin</span>
 					</div>
-					<div style={styles.field}>
-						<label style={styles.label}>Password</label>
-						<input
-							type="password"
-							value={password}
-							onChange={(e) => setPassword(e.target.value)}
-							required
-							style={styles.input}
-							placeholder="Enter password"
-						/>
-					</div>
-					<button type="submit" disabled={loading} style={styles.button}>
-						{loading ? 'Signing in...' : 'Sign In'}
-					</button>
-				</form>
+					<p className="font-semibold text-[11px] uppercase tracking-[0.14em] text-ink/70 mt-3">Sign in to continue</p>
+				</div>
+
+				<div className="bg-surface border border-hairline rounded-lg p-8">
+					{error && (
+						<div className="mb-5 bg-alarm-wash border border-alarm/25 text-alarm text-[13px] rounded-md px-3 py-2.5">
+							{error}
+						</div>
+					)}
+
+					<form onSubmit={handleSubmit} className="flex flex-col gap-4">
+						<div className="flex flex-col gap-1.5">
+							<label htmlFor="email" className="font-semibold text-[11px] uppercase tracking-[0.1em] text-ink/70">
+								Email
+							</label>
+							<input
+								id="email"
+								type="email"
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+								required
+								autoComplete="email"
+								className="px-3 py-2.5 bg-canvas border border-hairline rounded-md text-[14px] text-ink outline-none focus:border-accent focus:bg-surface transition-colors"
+								placeholder="admin@plaite.io"
+							/>
+						</div>
+						<div className="flex flex-col gap-1.5">
+							<label htmlFor="password" className="font-semibold text-[11px] uppercase tracking-[0.1em] text-ink/70">
+								Password
+							</label>
+							<input
+								id="password"
+								type="password"
+								value={password}
+								onChange={(e) => setPassword(e.target.value)}
+								required
+								autoComplete="current-password"
+								className="px-3 py-2.5 bg-canvas border border-hairline rounded-md text-[14px] text-ink outline-none focus:border-accent focus:bg-surface transition-colors"
+							/>
+						</div>
+						<button
+							type="submit"
+							disabled={loading}
+							className="mt-2 px-5 py-2.5 bg-accent text-surface rounded-md text-[14px] font-medium hover:bg-ink transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+						>
+							{loading ? 'Signing in…' : 'Sign in'}
+						</button>
+					</form>
+				</div>
+
+				<p className="mt-6 text-center font-semibold text-[11px] uppercase tracking-[0.1em] text-ink/70">
+					Authorized personnel only.
+				</p>
 			</div>
 		</div>
 	);
 }
-
-const styles: Record<string, React.CSSProperties> = {
-	container: {
-		minHeight: '100vh',
-		display: 'flex',
-		alignItems: 'center',
-		justifyContent: 'center',
-		background: '#f1f5f9',
-		fontFamily: "'Montserrat', sans-serif",
-	},
-	card: {
-		background: '#fff',
-		borderRadius: '16px',
-		padding: '3rem',
-		width: '100%',
-		maxWidth: '400px',
-		boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
-	},
-	logo: {
-		fontSize: '2rem',
-		fontWeight: 700,
-		color: '#4A9B6B',
-		textAlign: 'center',
-		marginBottom: '0.5rem',
-	},
-	title: {
-		fontSize: '1.1rem',
-		fontWeight: 500,
-		color: '#64748b',
-		textAlign: 'center',
-		marginBottom: '2rem',
-	},
-	error: {
-		background: '#fef2f2',
-		color: '#dc2626',
-		padding: '0.75rem 1rem',
-		borderRadius: '8px',
-		fontSize: '0.9rem',
-		marginBottom: '1rem',
-	},
-	form: {
-		display: 'flex',
-		flexDirection: 'column',
-		gap: '1.25rem',
-	},
-	field: {
-		display: 'flex',
-		flexDirection: 'column',
-		gap: '0.4rem',
-	},
-	label: {
-		fontSize: '0.85rem',
-		fontWeight: 600,
-		color: '#374151',
-	},
-	input: {
-		padding: '0.75rem 1rem',
-		border: '1px solid #e2e8f0',
-		borderRadius: '8px',
-		fontSize: '1rem',
-		outline: 'none',
-		fontFamily: "'Montserrat', sans-serif",
-	},
-	button: {
-		padding: '0.85rem',
-		background: 'linear-gradient(135deg, rgba(74,155,107,0.8), #4A9B6B)',
-		color: '#fff',
-		border: 'none',
-		borderRadius: '50px',
-		fontSize: '1rem',
-		fontWeight: 600,
-		cursor: 'pointer',
-		fontFamily: "'Montserrat', sans-serif",
-		marginTop: '0.5rem',
-	},
-};
