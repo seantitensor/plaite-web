@@ -148,6 +148,46 @@ export async function queryWhere(
 		}));
 }
 
+export async function queryAllOrdered(
+	col: string,
+	field: string,
+	direction: 'asc' | 'desc',
+	env: Env,
+	limit = 100,
+): Promise<Array<{ id: string } & Record<string, unknown>>> {
+	const { Authorization, sa } = await authHeader(env);
+	const body = {
+		structuredQuery: {
+			from: [{ collectionId: col }],
+			orderBy: [
+				{
+					field: { fieldPath: field },
+					direction: direction === 'desc' ? 'DESCENDING' : 'ASCENDING',
+				},
+			],
+			limit,
+		},
+	};
+	const res = await fetch(`${docsBase(sa)}:runQuery`, {
+		method: 'POST',
+		headers: { Authorization, 'Content-Type': 'application/json' },
+		body: JSON.stringify(body),
+	});
+	if (!res.ok) {
+		const text = await res.text();
+		throw new Error(`Firestore runQuery failed (${res.status}): ${text}`);
+	}
+	const rows = (await res.json()) as Array<{
+		document?: { name: string; fields?: Record<string, FsValue> };
+	}>;
+	return rows
+		.filter((r) => r.document)
+		.map((r) => ({
+			id: docIdFromName(r.document!.name),
+			...fieldsToObject(r.document!.fields || {}),
+		}));
+}
+
 export async function addDoc(
 	col: string,
 	data: Record<string, unknown>,

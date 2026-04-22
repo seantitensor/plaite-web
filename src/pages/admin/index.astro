@@ -18,6 +18,27 @@ import AdminLayout from '../../components/admin/AdminLayout.astro';
 				<p>View active users, sessions, retention, funnels, and geographic distribution from Firebase Analytics.</p>
 			</a>
 
+			<a href="/admin/history" class="card">
+				<div class="card-icon">
+					<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4A9B6B" stroke-width="2">
+						<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+					</svg>
+				</div>
+				<h2>History</h2>
+				<p>Long-horizon trends for DAU, MAU, stickiness, sessions, screen views, crash rate, and more over 30d / 90d / 1y / All time.</p>
+			</a>
+
+			<a href="/admin/messages" class="card">
+				<div class="card-icon">
+					<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4A9B6B" stroke-width="2">
+						<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+						<polyline points="22,6 12,13 2,6"/>
+					</svg>
+				</div>
+				<h2>Messages</h2>
+				<p>Contact-form submissions from plaite.io. Mark as read, reply via email, or delete once handled.</p>
+			</a>
+
 			<a href="/admin/board" class="card">
 				<div class="card-icon">
 					<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#4A9B6B" stroke-width="2">
@@ -27,6 +48,19 @@ import AdminLayout from '../../components/admin/AdminLayout.astro';
 				<h2>Roadmap</h2>
 				<p>Organize work into epics like "Current Features" or "Next Release". Each feature has its own todo checklist and auto-computed progress.</p>
 			</a>
+
+			<div class="card card-disabled" aria-disabled="true">
+				<div class="card-icon">
+					<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+						<path d="M6 2l1 6h10l1-6"/><path d="M5 8h14l-1 14H6L5 8z"/><path d="M10 12v6"/><path d="M14 12v6"/>
+					</svg>
+				</div>
+				<h2>
+					Recipe Processing
+					<span class="badge-soon">Coming Soon</span>
+				</h2>
+				<p>Ingest, enrich, and moderate recipes coming into the app — tagging, nutrition, duplicate detection, and image processing. In development.</p>
+			</div>
 		</div>
 	</div>
 </AdminLayout>
@@ -47,9 +81,9 @@ import AdminLayout from '../../components/admin/AdminLayout.astro';
 
 	.cards {
 		display: grid;
-		grid-template-columns: repeat(2, 1fr);
+		grid-template-columns: repeat(3, 1fr);
 		gap: 1.5rem;
-		max-width: 700px;
+		max-width: 1100px;
 	}
 
 	.card {
@@ -75,12 +109,47 @@ import AdminLayout from '../../components/admin/AdminLayout.astro';
 		font-weight: 700;
 		color: #1e293b;
 		margin-bottom: 0.5rem;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		flex-wrap: wrap;
 	}
 
 	.card p {
 		font-size: 0.85rem;
 		color: #64748b;
 		line-height: 1.5;
+	}
+
+	.card-disabled {
+		cursor: not-allowed;
+		opacity: 0.7;
+	}
+
+	.card-disabled:hover {
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+		transform: none;
+	}
+
+	.card-disabled h2 {
+		color: #64748b;
+	}
+
+	.badge-soon {
+		font-size: 0.62rem;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		background: #f1f5f9;
+		color: #64748b;
+		padding: 0.15rem 0.5rem;
+		border-radius: 999px;
+	}
+
+	@media (max-width: 900px) {
+		.cards {
+			grid-template-columns: repeat(2, 1fr);
+		}
 	}
 
 	@media (max-width: 600px) {

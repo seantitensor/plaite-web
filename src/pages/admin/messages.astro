@@ -1,0 +1,8 @@
+---
+import AdminLayout from '../../components/admin/AdminLayout.astro';
+import MessagesList from '../../components/admin/messages/MessagesList';
+---
+
+<AdminLayout title="Messages" activePage="messages">
+	<MessagesList client:load />
+</AdminLayout>

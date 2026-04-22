@@ -14,19 +14,29 @@ import Footer from '../components/Footer.astro';
 		<p class="section-subtitle">Get in touch with us for any questions, support, or feedback.</p>
 
 		<div class="form-container">
-			<form class="contact-form" action="#" method="post">
+			<div class="contact-status" role="status" aria-live="polite"></div>
+			<form class="contact-form" action="/api/contact" method="post">
 				<div class="form-group">
 					<label for="name">Name</label>
-					<input type="text" id="name" name="name" required />
+					<input type="text" id="name" name="name" maxlength="100" required />
 				</div>
 				<div class="form-group">
 					<label for="email">Email</label>
-					<input type="email" id="email" name="email" required />
+					<input type="email" id="email" name="email" maxlength="200" required />
 				</div>
 				<div class="form-group">
 					<label for="message">Message</label>
-					<textarea id="message" name="message" required></textarea>
+					<textarea id="message" name="message" maxlength="2000" required></textarea>
 				</div>
+				{/* Honeypot — bots fill this, humans don't see it */}
+				<input
+					type="text"
+					name="company"
+					tabindex="-1"
+					autocomplete="off"
+					style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0"
+					aria-hidden="true"
+				/>
 				<button type="submit" class="submit-button">Send Message</button>
 			</form>
 		</div>
@@ -40,6 +50,44 @@ import Footer from '../components/Footer.astro';
 
 	<Footer />
 </Layout>
+
+<script>
+	const form = document.querySelector('.contact-form') as HTMLFormElement | null;
+	const status = document.querySelector('.contact-status') as HTMLDivElement | null;
+	if (form && status) {
+		const button = form.querySelector('button') as HTMLButtonElement;
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const data = Object.fromEntries(new FormData(form));
+			button.disabled = true;
+			const originalLabel = button.textContent;
+			button.textContent = 'Sending…';
+			status.textContent = '';
+			status.className = 'contact-status';
+			try {
+				const res = await fetch('/api/contact', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(data),
+				});
+				const body = (await res.json()) as { success?: boolean; error?: string };
+				if (!res.ok || !body.success) {
+					throw new Error(body.error || 'Submission failed');
+				}
+				form.reset();
+				status.textContent = "Thanks — we'll get back to you soon.";
+				status.className = 'contact-status success';
+			} catch (err) {
+				status.textContent =
+					(err as Error).message || 'Something went wrong. Please try again.';
+				status.className = 'contact-status error';
+			} finally {
+				button.disabled = false;
+				button.textContent = originalLabel;
+			}
+		});
+	}
+</script>
 
 <style>
 	.contact-page {
@@ -69,6 +117,23 @@ import Footer from '../components/Footer.astro';
 	.form-container {
 		padding: 0.5rem;
 		margin-bottom: 1rem;
+	}
+
+	.contact-status {
+		margin-bottom: 1rem;
+		padding: 0;
+		border-radius: var(--radius-sm);
+		font-size: 0.95rem;
+	}
+	.contact-status.success {
+		background: rgba(74, 155, 107, 0.1);
+		color: #2f6b4a;
+		padding: 0.85rem 1rem;
+	}
+	.contact-status.error {
+		background: rgba(220, 38, 38, 0.08);
+		color: #b91c1c;
+		padding: 0.85rem 1rem;
 	}
 
 	.contact-form {
