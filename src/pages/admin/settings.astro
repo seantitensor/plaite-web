@@ -1,0 +1,25 @@
+---
+import AdminLayout from '../../components/admin/AdminLayout.astro';
+import UsersList from '../../components/admin/users/UsersList';
+---
+
+<AdminLayout title="Settings" activePage="settings">
+	<header class="mb-8">
+		<p class="font-semibold text-[11px] uppercase tracking-[0.14em] text-ink/70 mb-2">Settings</p>
+		<h1 class="italic text-[44px] font-light tracking-[-0.03em] leading-none text-ink">
+			Workspace settings.
+		</h1>
+	</header>
+
+	<section class="mb-12">
+		<div class="mb-4">
+			<h2 class="italic text-[22px] font-normal tracking-[-0.01em] text-ink">Admin users</h2>
+			<p class="text-[13px] text-muted mt-1 max-w-[600px] leading-relaxed">
+				Anyone with the <code class="font-mono text-[12px] bg-canvas border border-hairline rounded px-1 py-0.5">admin</code> claim
+				can sign in at <code class="font-mono text-[12px] bg-canvas border border-hairline rounded px-1 py-0.5">/admin</code>.
+				Grant or revoke access below. Users need to sign out and back in for changes to take effect.
+			</p>
+		</div>
+		<UsersList client:load />
+	</section>
+</AdminLayout>

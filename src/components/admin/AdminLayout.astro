@@ -3,7 +3,7 @@ import '../../styles/admin-theme.css';
 
 interface Props {
 	title?: string;
-	activePage?: 'overview' | 'analytics' | 'history' | 'messages' | 'board';
+	activePage?: 'overview' | 'analytics' | 'history' | 'messages' | 'board' | 'settings';
 }
 
 const { title = 'Admin Dashboard', activePage = 'overview' } = Astro.props;
@@ -29,6 +29,7 @@ const navItems = [
 			href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700&display=swap"
 			rel="stylesheet"
 		/>
+		{user && <meta name="admin-uid" content={user.uid} />}
 		<title>{title} · plaite admin</title>
 	</head>
 	<body class="bg-canvas text-ink font-sans antialiased min-h-screen m-0">
@@ -81,26 +82,45 @@ const navItems = [
 					})}
 				</nav>
 
-				<div class="mt-auto px-5 py-5 border-t border-hairline">
-					{user && (
-						<div class="flex items-center gap-3 mb-3 min-w-0">
-							<div class="w-8 h-8 rounded-full bg-forest text-surface flex items-center justify-center font-semibold text-[13px] flex-shrink-0">
-								{user.name?.charAt(0).toUpperCase() || 'A'}
+				<div class="mt-auto border-t border-hairline">
+					<a
+						href="/admin/settings"
+						class:list={[
+							'relative flex items-center gap-2.5 px-5 py-3 text-[13.5px] transition-colors no-underline border-b border-hairline',
+							activePage === 'settings'
+								? 'text-ink font-medium bg-surface'
+								: 'text-muted hover:text-ink hover:bg-mint-wash',
+						]}
+					>
+						{activePage === 'settings' && <span class="absolute left-0 top-2.5 bottom-2.5 w-[2px] rounded-full bg-accent"></span>}
+						<svg class="admin-nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+							<circle cx="12" cy="12" r="3"/>
+							<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+						</svg>
+						<span>Settings</span>
+					</a>
+
+					<div class="px-5 py-5">
+						{user && (
+							<div class="flex items-center gap-3 mb-3 min-w-0">
+								<div class="w-8 h-8 rounded-full bg-forest text-surface flex items-center justify-center font-semibold text-[13px] flex-shrink-0">
+									{user.name?.charAt(0).toUpperCase() || 'A'}
+								</div>
+								<div class="min-w-0 flex-1">
+									<div class="text-xs font-medium text-ink truncate">{user.name}</div>
+									<div class="font-mono text-[10px] text-muted truncate">{user.email}</div>
+								</div>
 							</div>
-							<div class="min-w-0 flex-1">
-								<div class="text-xs font-medium text-ink truncate">{user.name}</div>
-								<div class="font-mono text-[10px] text-muted truncate">{user.email}</div>
-							</div>
-						</div>
-					)}
-					<form method="POST" action="/api/admin/auth/logout" class="m-0">
-						<button
-							type="submit"
-							class="w-full text-left text-xs text-muted hover:text-alarm transition-colors bg-transparent border-0 cursor-pointer p-0"
-						>
-							Sign out
-						</button>
-					</form>
+						)}
+						<form method="POST" action="/api/admin/auth/logout" class="m-0">
+							<button
+								type="submit"
+								class="w-full text-left text-xs text-muted hover:text-alarm transition-colors bg-transparent border-0 cursor-pointer p-0"
+							>
+								Sign out
+							</button>
+						</form>
+					</div>
 				</div>
 			</aside>
 
