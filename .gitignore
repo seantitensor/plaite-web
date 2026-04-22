@@ -13,9 +13,11 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# environment variables
-.env
-.env.production
+# environment variables — .env is COMMITTED (PUBLIC_* Firebase config must
+# be baked into the build). Secrets live in .dev.vars (local) and wrangler
+# secrets (production), both gitignored.
+.env.local
+.env.production.local
 .dev.vars
 .wrangler/
 
