@@ -1,13 +1,14 @@
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../../lib/auth/requireAdmin';
+import { getRealtimeActiveUsers } from '../../../../lib/firebase/analytics';
+import { env } from "cloudflare:workers";
 
 export const GET: APIRoute = async (ctx) => {
 	const denied = await requireAdmin(ctx);
 	if (denied) return denied;
 
 	try {
-		const { getRealtimeActiveUsers } = await import('../../../../lib/firebase/analytics');
-		const data = await getRealtimeActiveUsers();
+		const data = await getRealtimeActiveUsers(env);
 		return new Response(JSON.stringify(data), {
 			headers: { 'Content-Type': 'application/json' },
 		});

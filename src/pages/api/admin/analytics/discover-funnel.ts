@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../../lib/auth/requireAdmin';
+import { getDiscoverFunnel } from '../../../../lib/firebase/analytics';
+import { env } from "cloudflare:workers";
 
 export const GET: APIRoute = async (ctx) => {
 	const denied = await requireAdmin(ctx);
@@ -10,8 +12,7 @@ export const GET: APIRoute = async (ctx) => {
 	const endDate = url.searchParams.get('endDate') || 'today';
 
 	try {
-		const { getDiscoverFunnel } = await import('../../../../lib/firebase/analytics');
-		const { steps } = await getDiscoverFunnel(startDate, endDate);
+		const { steps } = await getDiscoverFunnel(startDate, endDate, env);
 		return new Response(JSON.stringify({ steps }), {
 			headers: { 'Content-Type': 'application/json' },
 		});

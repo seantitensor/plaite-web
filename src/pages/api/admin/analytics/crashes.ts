@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../../lib/auth/requireAdmin';
+import { getCrashesDaily } from '../../../../lib/firebase/analytics';
+import { env } from "cloudflare:workers";
 
 export const GET: APIRoute = async (ctx) => {
 	const denied = await requireAdmin(ctx);
@@ -10,8 +12,7 @@ export const GET: APIRoute = async (ctx) => {
 	const endDate = url.searchParams.get('endDate') || 'today';
 
 	try {
-		const { getCrashesDaily } = await import('../../../../lib/firebase/analytics');
-		const data = await getCrashesDaily(startDate, endDate);
+		const data = await getCrashesDaily(startDate, endDate, env);
 		return new Response(JSON.stringify(data), {
 			headers: { 'Content-Type': 'application/json' },
 		});

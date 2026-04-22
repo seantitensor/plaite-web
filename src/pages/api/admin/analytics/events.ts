@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../../lib/auth/requireAdmin';
+import { getTopEvents } from '../../../../lib/firebase/analytics';
+import { env } from "cloudflare:workers";
 
 export const GET: APIRoute = async (ctx) => {
 	const denied = await requireAdmin(ctx);
@@ -10,10 +12,9 @@ export const GET: APIRoute = async (ctx) => {
 	const endDate = url.searchParams.get('endDate') || 'today';
 
 	try {
-		const { getTopEvents } = await import('../../../../lib/firebase/analytics');
-		const response = await getTopEvents(startDate, endDate);
+		const response = await getTopEvents(startDate, endDate, env);
 
-		const events = (response.rows || []).map((row) => ({
+		const events = (response.rows || []).map((row: any) => ({
 			name: row.dimensionValues?.[0]?.value || '',
 			count: Number(row.metricValues?.[0]?.value || 0),
 			users: Number(row.metricValues?.[1]?.value || 0),

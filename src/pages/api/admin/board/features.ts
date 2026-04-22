@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../../lib/auth/requireAdmin';
+import { addDoc } from '../../../../lib/edge/firestore';
+import { env } from "cloudflare:workers";
 
 const BOARD_ID = 'default';
 
@@ -17,8 +19,6 @@ export const POST: APIRoute = async (ctx) => {
 			});
 		}
 
-		const { adminDb } = await import('../../../../lib/firebase/admin');
-
 		const feature = {
 			boardId: BOARD_ID,
 			epicId: body.epicId,
@@ -30,9 +30,9 @@ export const POST: APIRoute = async (ctx) => {
 			updatedAt: new Date(),
 		};
 
-		const docRef = await adminDb.collection('admin_features').add(feature);
+		const doc = await addDoc('admin_features', feature, env);
 
-		return new Response(JSON.stringify({ id: docRef.id, ...feature }), {
+		return new Response(JSON.stringify(doc), {
 			status: 201,
 			headers: { 'Content-Type': 'application/json' },
 		});

@@ -16,6 +16,8 @@ pnpm-debug.log*
 # environment variables
 .env
 .env.production
+.dev.vars
+.wrangler/
 
 # firebase service account keys
 *service-account*.json

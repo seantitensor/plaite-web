@@ -1,6 +1,8 @@
 import type { APIRoute } from 'astro';
+import { getAuth } from '../../../../lib/auth/firebaseEdge';
+import { env } from "cloudflare:workers";
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request, cookies, locals }) => {
 	try {
 		const { idToken } = await request.json();
 
@@ -11,12 +13,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 			});
 		}
 
-		const { adminAuth } = await import('../../../../lib/firebase/admin');
+		const auth = getAuth(env);
 
-		// Verify the ID token
-		const decodedToken = await adminAuth.verifyIdToken(idToken);
+		const decodedToken = await auth.verifyIdToken(idToken);
 
-		// Check admin custom claim
 		if (!decodedToken.admin) {
 			return new Response(JSON.stringify({ error: 'Not an admin user' }), {
 				status: 403,
@@ -24,9 +24,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 			});
 		}
 
-		// Create session cookie (5 days)
 		const expiresIn = 60 * 60 * 24 * 5 * 1000;
-		const sessionCookie = await adminAuth.createSessionCookie(idToken, { expiresIn });
+		const sessionCookie = await auth.createSessionCookie(idToken, { expiresIn });
 
 		cookies.set('__session', sessionCookie, {
 			path: '/',

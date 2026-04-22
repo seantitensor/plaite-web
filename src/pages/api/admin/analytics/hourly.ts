@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../../lib/auth/requireAdmin';
+import { getHourlyActivity } from '../../../../lib/firebase/analytics';
+import { env } from "cloudflare:workers";
 
 export const GET: APIRoute = async (ctx) => {
 	const denied = await requireAdmin(ctx);
@@ -10,8 +12,7 @@ export const GET: APIRoute = async (ctx) => {
 	const endDate = url.searchParams.get('endDate') || 'today';
 
 	try {
-		const { getHourlyActivity } = await import('../../../../lib/firebase/analytics');
-		const { grid } = await getHourlyActivity(startDate, endDate);
+		const { grid } = await getHourlyActivity(startDate, endDate, env);
 		return new Response(JSON.stringify({ grid }), {
 			headers: { 'Content-Type': 'application/json' },
 		});

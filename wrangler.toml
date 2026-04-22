@@ -1,0 +1,21 @@
+name = "plaite-web"
+compatibility_date = "2026-04-20"
+compatibility_flags = ["nodejs_compat"]
+
+# The Astro Cloudflare adapter produces its own worker + assets manifest under
+# dist/. We do NOT set `main` or `[assets]` here — those are written by the
+# adapter into dist/wrangler.json at build time.
+
+[[kv_namespaces]]
+binding = "JWKS_CACHE"
+id = "e20dfe93cab54b9d96e5675d4dde6bbf"
+
+[vars]
+GA_PROPERTY_ID = "494404211"
+PUBLIC_FIREBASE_API_KEY = "AIzaSyAOkWl5R7wvWIukLKT-qCb0bDLNnp2sMSc"
+PUBLIC_FIREBASE_AUTH_DOMAIN = "plaite-production.firebaseapp.com"
+PUBLIC_FIREBASE_PROJECT_ID = "plaite-production"
+PUBLIC_FIREBASE_STORAGE_BUCKET = "plaite-production.firebasestorage.app"
+PUBLIC_FIREBASE_MESSAGING_SENDER_ID = "947488740823"
+PUBLIC_FIREBASE_APP_ID = "1:947488740823:web:39a86bfb2b64dc2b9b2792"
+PUBLIC_FIREBASE_MEASUREMENT_ID = "G-YY8G891V9Z"

@@ -1,19 +1,4 @@
-import { BetaAnalyticsDataClient } from '@google-analytics/data';
-
-let client: BetaAnalyticsDataClient | null = null;
-
-function getClient() {
-	if (client) return client;
-
-	// Astro exposes .env via import.meta.env, not process.env — pass keyFilename
-	// explicitly so the SDK doesn't fall back to GCE metadata server.
-	client = new BetaAnalyticsDataClient({
-		keyFilename: import.meta.env.GOOGLE_APPLICATION_CREDENTIALS,
-	});
-	return client;
-}
-
-const propertyId = () => import.meta.env.GA_PROPERTY_ID;
+import { runReport, runRealtimeReport } from '../edge/ga4';
 
 /**
  * Range-scoped distinct totals.
@@ -22,9 +7,8 @@ const propertyId = () => import.meta.env.GA_PROPERTY_ID;
  * and averageSessionDuration so the dashboard cards don't approximate them
  * by averaging daily values.
  */
-export async function getOverviewTotals(startDate: string, endDate: string) {
-	const [response] = await getClient().runReport({
-		property: `properties/${propertyId()}`,
+export async function getOverviewTotals(startDate: string, endDate: string, env: Env) {
+	const response = await runReport({
 		dateRanges: [{ startDate, endDate }],
 		metrics: [
 			{ name: 'activeUsers' },
@@ -34,7 +18,7 @@ export async function getOverviewTotals(startDate: string, endDate: string) {
 			{ name: 'averageSessionDuration' },
 			{ name: 'sessionsPerUser' },
 		],
-	});
+	}, env);
 	const row = response.rows?.[0]?.metricValues || [];
 	return {
 		activeUsers: Number(row[0]?.value || 0),
@@ -46,9 +30,8 @@ export async function getOverviewTotals(startDate: string, endDate: string) {
 	};
 }
 
-export async function getActiveUsers(startDate: string, endDate: string) {
-	const [response] = await getClient().runReport({
-		property: `properties/${propertyId()}`,
+export async function getActiveUsers(startDate: string, endDate: string, env: Env) {
+	return runReport({
 		dateRanges: [{ startDate, endDate }],
 		metrics: [
 			{ name: 'activeUsers' },
@@ -58,13 +41,11 @@ export async function getActiveUsers(startDate: string, endDate: string) {
 		],
 		dimensions: [{ name: 'date' }],
 		orderBys: [{ dimension: { dimensionName: 'date' } }],
-	});
-	return response;
+	}, env);
 }
 
-export async function getSessions(startDate: string, endDate: string) {
-	const [response] = await getClient().runReport({
-		property: `properties/${propertyId()}`,
+export async function getSessions(startDate: string, endDate: string, env: Env) {
+	return runReport({
 		dateRanges: [{ startDate, endDate }],
 		metrics: [
 			{ name: 'sessions' },
@@ -74,20 +55,17 @@ export async function getSessions(startDate: string, endDate: string) {
 		],
 		dimensions: [{ name: 'date' }],
 		orderBys: [{ dimension: { dimensionName: 'date' } }],
-	});
-	return response;
+	}, env);
 }
 
-export async function getTopEvents(startDate: string, endDate: string, limit = 20) {
-	const [response] = await getClient().runReport({
-		property: `properties/${propertyId()}`,
+export async function getTopEvents(startDate: string, endDate: string, env: Env, limit = 20) {
+	return runReport({
 		dateRanges: [{ startDate, endDate }],
 		metrics: [{ name: 'eventCount' }, { name: 'totalUsers' }],
 		dimensions: [{ name: 'eventName' }],
 		orderBys: [{ metric: { metricName: 'eventCount' }, desc: true }],
 		limit,
-	});
-	return response;
+	}, env);
 }
 
 /**
@@ -111,13 +89,11 @@ export function toAbsoluteDate(input: string): string {
 	return now.toISOString().slice(0, 10);
 }
 
-export async function getRetentionCohorts(startDate: string, endDate: string) {
-	// Cohort requests: dateRanges must be empty, cohort dateRange requires absolute YYYY-MM-DD
+export async function getRetentionCohorts(startDate: string, endDate: string, env: Env) {
 	const absStart = toAbsoluteDate(startDate);
 	const absEnd = toAbsoluteDate(endDate);
 
-	const [response] = await getClient().runReport({
-		property: `properties/${propertyId()}`,
+	return runReport({
 		metrics: [{ name: 'cohortActiveUsers' }, { name: 'cohortTotalUsers' }],
 		dimensions: [
 			{ name: 'cohort' },
@@ -132,62 +108,54 @@ export async function getRetentionCohorts(startDate: string, endDate: string) {
 				},
 			],
 			cohortsRange: {
-				granularity: 'DAILY' as any,
+				granularity: 'DAILY',
 				startOffset: 0,
 				endOffset: 13,
 			},
 		},
-	});
-	return response;
+	}, env);
 }
 
-export async function getGeoDistribution(startDate: string, endDate: string) {
-	const [response] = await getClient().runReport({
-		property: `properties/${propertyId()}`,
+export async function getGeoDistribution(startDate: string, endDate: string, env: Env) {
+	return runReport({
 		dateRanges: [{ startDate, endDate }],
 		metrics: [{ name: 'activeUsers' }, { name: 'sessions' }],
 		dimensions: [{ name: 'country' }],
 		orderBys: [{ metric: { metricName: 'activeUsers' }, desc: true }],
 		limit: 30,
-	});
-	return response;
+	}, env);
 }
 
-export async function getScreenViews(startDate: string, endDate: string) {
-	const [response] = await getClient().runReport({
-		property: `properties/${propertyId()}`,
+export async function getScreenViews(startDate: string, endDate: string, env: Env) {
+	return runReport({
 		dateRanges: [{ startDate, endDate }],
 		metrics: [{ name: 'screenPageViews' }, { name: 'activeUsers' }],
 		dimensions: [{ name: 'unifiedScreenName' }],
 		orderBys: [{ metric: { metricName: 'screenPageViews' }, desc: true }],
 		limit: 20,
-	});
-	return response;
+	}, env);
 }
 
 /**
  * Approximate a funnel by running multiple event-count reports.
- * GA4's official runFunnelReport is not in the Beta Data API - we'd need the Alpha API.
- * Instead, we query user counts for each funnel-step event and compute drop-off manually.
  */
-export async function getFunnelData(startDate: string, endDate: string) {
-	const funnelEvents = [
+export async function getFunnelData(startDate: string, endDate: string, env: Env) {
+	return runFunnel(startDate, endDate, env, [
 		{ name: 'App Open', event: 'session_start' },
 		{ name: 'View Screen', event: 'screen_view' },
 		{ name: 'Save Recipe', event: 'save_recipe' },
-	];
-	return runFunnel(startDate, endDate, funnelEvents);
+	]);
 }
 
 async function runFunnel(
 	startDate: string,
 	endDate: string,
+	env: Env,
 	funnelEvents: Array<{ name: string; event: string }>,
 ) {
 	const steps: Array<{ name: string; users: number }> = [];
 	for (const step of funnelEvents) {
-		const [response] = await getClient().runReport({
-			property: `properties/${propertyId()}`,
+		const response = await runReport({
 			dateRanges: [{ startDate, endDate }],
 			metrics: [{ name: 'totalUsers' }],
 			dimensionFilter: {
@@ -196,15 +164,15 @@ async function runFunnel(
 					stringFilter: { value: step.event },
 				},
 			},
-		});
+		}, env);
 		const users = Number(response.rows?.[0]?.metricValues?.[0]?.value || 0);
 		steps.push({ name: step.name, users });
 	}
 	return { steps };
 }
 
-export async function getDiscoverFunnel(startDate: string, endDate: string) {
-	return runFunnel(startDate, endDate, [
+export async function getDiscoverFunnel(startDate: string, endDate: string, env: Env) {
+	return runFunnel(startDate, endDate, env, [
 		{ name: 'Discover Screen', event: 'Discover_ScreenViewed' },
 		{ name: 'Swiped', event: 'Discover_RecipeSwiped' },
 		{ name: 'Recipe Viewed', event: 'Recipe_Viewed' },
@@ -212,9 +180,8 @@ export async function getDiscoverFunnel(startDate: string, endDate: string) {
 	]);
 }
 
-async function countEvent(startDate: string, endDate: string, eventName: string): Promise<number> {
-	const [response] = await getClient().runReport({
-		property: `properties/${propertyId()}`,
+async function countEvent(startDate: string, endDate: string, eventName: string, env: Env): Promise<number> {
+	const response = await runReport({
 		dateRanges: [{ startDate, endDate }],
 		metrics: [{ name: 'eventCount' }],
 		dimensionFilter: {
@@ -223,14 +190,13 @@ async function countEvent(startDate: string, endDate: string, eventName: string)
 				stringFilter: { value: eventName },
 			},
 		},
-	});
+	}, env);
 	return Number(response.rows?.[0]?.metricValues?.[0]?.value || 0);
 }
 
-export async function getCrashesDaily(startDate: string, endDate: string) {
+export async function getCrashesDaily(startDate: string, endDate: string, env: Env) {
 	const [dailyResp, totalsResp] = await Promise.all([
-		getClient().runReport({
-			property: `properties/${propertyId()}`,
+		runReport({
 			dateRanges: [{ startDate, endDate }],
 			metrics: [{ name: 'eventCount' }],
 			dimensions: [{ name: 'date' }],
@@ -241,43 +207,41 @@ export async function getCrashesDaily(startDate: string, endDate: string) {
 				},
 			},
 			orderBys: [{ dimension: { dimensionName: 'date' } }],
-		}),
-		getClient().runReport({
-			property: `properties/${propertyId()}`,
+		}, env),
+		runReport({
 			dateRanges: [{ startDate, endDate }],
 			metrics: [{ name: 'sessions' }],
-		}),
+		}, env),
 	]);
 
-	const daily = (dailyResp[0].rows || []).map((row) => ({
+	const daily = (dailyResp.rows || []).map((row: any) => ({
 		date: row.dimensionValues?.[0]?.value || '',
 		crashes: Number(row.metricValues?.[0]?.value || 0),
 	}));
 
-	const crashes = daily.reduce((sum, d) => sum + d.crashes, 0);
-	const sessions = Number(totalsResp[0].rows?.[0]?.metricValues?.[0]?.value || 0);
+	const crashes = daily.reduce((sum: number, d: { crashes: number }) => sum + d.crashes, 0);
+	const sessions = Number(totalsResp.rows?.[0]?.metricValues?.[0]?.value || 0);
 	const rate = sessions > 0 ? crashes / sessions : 0;
 
 	return { daily, totals: { crashes, sessions, rate } };
 }
 
-export async function getAuthFailures(startDate: string, endDate: string) {
+export async function getAuthFailures(startDate: string, endDate: string, env: Env) {
 	const [failures, sessionStarts] = await Promise.all([
-		countEvent(startDate, endDate, 'StartView_authentication_Fail'),
-		countEvent(startDate, endDate, 'session_start'),
+		countEvent(startDate, endDate, 'StartView_authentication_Fail', env),
+		countEvent(startDate, endDate, 'session_start', env),
 	]);
 	const rate = sessionStarts > 0 ? failures / sessionStarts : 0;
 	return { failures, sessionStarts, rate };
 }
 
-export async function getNewVsReturning(startDate: string, endDate: string) {
-	const [response] = await getClient().runReport({
-		property: `properties/${propertyId()}`,
+export async function getNewVsReturning(startDate: string, endDate: string, env: Env) {
+	const response = await runReport({
 		dateRanges: [{ startDate, endDate }],
 		metrics: [{ name: 'activeUsers' }],
 		dimensions: [{ name: 'date' }, { name: 'newVsReturning' }],
 		orderBys: [{ dimension: { dimensionName: 'date' } }],
-	});
+	}, env);
 
 	const byDate: Record<string, { date: string; new: number; returning: number }> = {};
 	for (const row of response.rows || []) {
@@ -292,39 +256,33 @@ export async function getNewVsReturning(startDate: string, endDate: string) {
 	return { daily };
 }
 
-export async function getAppVersions(startDate: string, endDate: string) {
-	const [response] = await getClient().runReport({
-		property: `properties/${propertyId()}`,
+export async function getAppVersions(startDate: string, endDate: string, env: Env) {
+	return runReport({
 		dateRanges: [{ startDate, endDate }],
 		metrics: [{ name: 'sessions' }, { name: 'activeUsers' }],
 		dimensions: [{ name: 'appVersion' }],
 		orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
 		limit: 10,
-	});
-	return response;
+	}, env);
 }
 
-export async function getDevices(startDate: string, endDate: string) {
-	const [response] = await getClient().runReport({
-		property: `properties/${propertyId()}`,
+export async function getDevices(startDate: string, endDate: string, env: Env) {
+	return runReport({
 		dateRanges: [{ startDate, endDate }],
 		metrics: [{ name: 'sessions' }, { name: 'activeUsers' }],
 		dimensions: [{ name: 'operatingSystemWithVersion' }],
 		orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
 		limit: 10,
-	});
-	return response;
+	}, env);
 }
 
-export async function getHourlyActivity(startDate: string, endDate: string) {
-	const [response] = await getClient().runReport({
-		property: `properties/${propertyId()}`,
+export async function getHourlyActivity(startDate: string, endDate: string, env: Env) {
+	const response = await runReport({
 		dateRanges: [{ startDate, endDate }],
 		metrics: [{ name: 'activeUsers' }],
 		dimensions: [{ name: 'dayOfWeek' }, { name: 'hour' }],
-	});
+	}, env);
 
-	// Build a 7x24 grid (Sunday=0 ... Saturday=6, hours 00..23)
 	const grid: number[][] = Array.from({ length: 7 }, () => Array(24).fill(0));
 	for (const row of response.rows || []) {
 		const dow = parseInt(row.dimensionValues?.[0]?.value || '0', 10);
@@ -351,7 +309,6 @@ export function computeGranularity(startDate: string, endDate: string): Granular
 }
 
 function isoWeekFromDate(d: Date): { year: number; week: number } {
-	// Thursday-based ISO week, per ISO 8601.
 	const target = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
 	const dayNum = target.getUTCDay() || 7;
 	target.setUTCDate(target.getUTCDate() + 4 - dayNum);
@@ -430,12 +387,9 @@ function orderBysFor(g: Granularity) {
 	];
 }
 
-export async function getHistoryUsers(startDate: string, endDate: string, g: Granularity) {
-	const [response] = await getClient().runReport({
-		property: `properties/${propertyId()}`,
+export async function getHistoryUsers(startDate: string, endDate: string, g: Granularity, env: Env) {
+	const response = await runReport({
 		dateRanges: [{ startDate, endDate }],
-		// NOTE: use activeUsers (distinct over bucket) — active1DayUsers is incompatible
-		// with non-daily time dimensions.
 		metrics: [
 			{ name: 'activeUsers' },
 			{ name: 'active28DayUsers' },
@@ -443,12 +397,12 @@ export async function getHistoryUsers(startDate: string, endDate: string, g: Gra
 		],
 		dimensions: dimsFor(g),
 		orderBys: orderBysFor(g),
-	});
+	}, env);
 
 	const scaffold = enumerateBuckets(startDate, endDate, g);
 	const byBucket: Record<string, { activeUsers: number; mau: number; newUsers: number }> = {};
 	for (const row of response.rows || []) {
-		const dimVals = (row.dimensionValues || []).map((dv) => dv.value || '');
+		const dimVals = (row.dimensionValues || []).map((dv: any) => dv.value || '');
 		const key = buildBucketKey(g, dimVals);
 		byBucket[key] = {
 			activeUsers: Number(row.metricValues?.[0]?.value || 0),
@@ -465,9 +419,8 @@ export async function getHistoryUsers(startDate: string, endDate: string, g: Gra
 	}));
 }
 
-export async function getHistorySessions(startDate: string, endDate: string, g: Granularity) {
-	const [response] = await getClient().runReport({
-		property: `properties/${propertyId()}`,
+export async function getHistorySessions(startDate: string, endDate: string, g: Granularity, env: Env) {
+	const response = await runReport({
 		dateRanges: [{ startDate, endDate }],
 		metrics: [
 			{ name: 'sessions' },
@@ -477,12 +430,12 @@ export async function getHistorySessions(startDate: string, endDate: string, g: 
 		],
 		dimensions: dimsFor(g),
 		orderBys: orderBysFor(g),
-	});
+	}, env);
 
 	const scaffold = enumerateBuckets(startDate, endDate, g);
 	const byBucket: Record<string, any> = {};
 	for (const row of response.rows || []) {
-		const dimVals = (row.dimensionValues || []).map((dv) => dv.value || '');
+		const dimVals = (row.dimensionValues || []).map((dv: any) => dv.value || '');
 		const key = buildBucketKey(g, dimVals);
 		byBucket[key] = {
 			sessions: Number(row.metricValues?.[0]?.value || 0),
@@ -506,9 +459,9 @@ async function bucketedEventCount(
 	endDate: string,
 	g: Granularity,
 	eventName: string,
+	env: Env,
 ): Promise<Record<string, number>> {
-	const [response] = await getClient().runReport({
-		property: `properties/${propertyId()}`,
+	const response = await runReport({
 		dateRanges: [{ startDate, endDate }],
 		metrics: [{ name: 'eventCount' }],
 		dimensions: dimsFor(g),
@@ -519,11 +472,11 @@ async function bucketedEventCount(
 			},
 		},
 		orderBys: orderBysFor(g),
-	});
+	}, env);
 
 	const byBucket: Record<string, number> = {};
 	for (const row of response.rows || []) {
-		const dimVals = (row.dimensionValues || []).map((dv) => dv.value || '');
+		const dimVals = (row.dimensionValues || []).map((dv: any) => dv.value || '');
 		const key = buildBucketKey(g, dimVals);
 		byBucket[key] = Number(row.metricValues?.[0]?.value || 0);
 	}
@@ -534,28 +487,28 @@ async function bucketedSessions(
 	startDate: string,
 	endDate: string,
 	g: Granularity,
+	env: Env,
 ): Promise<Record<string, number>> {
-	const [response] = await getClient().runReport({
-		property: `properties/${propertyId()}`,
+	const response = await runReport({
 		dateRanges: [{ startDate, endDate }],
 		metrics: [{ name: 'sessions' }],
 		dimensions: dimsFor(g),
 		orderBys: orderBysFor(g),
-	});
+	}, env);
 
 	const byBucket: Record<string, number> = {};
 	for (const row of response.rows || []) {
-		const dimVals = (row.dimensionValues || []).map((dv) => dv.value || '');
+		const dimVals = (row.dimensionValues || []).map((dv: any) => dv.value || '');
 		const key = buildBucketKey(g, dimVals);
 		byBucket[key] = Number(row.metricValues?.[0]?.value || 0);
 	}
 	return byBucket;
 }
 
-export async function getHistoryCrashes(startDate: string, endDate: string, g: Granularity) {
+export async function getHistoryCrashes(startDate: string, endDate: string, g: Granularity, env: Env) {
 	const [crashesByBucket, sessionsByBucket] = await Promise.all([
-		bucketedEventCount(startDate, endDate, g, 'app_exception'),
-		bucketedSessions(startDate, endDate, g),
+		bucketedEventCount(startDate, endDate, g, 'app_exception', env),
+		bucketedSessions(startDate, endDate, g, env),
 	]);
 
 	const scaffold = enumerateBuckets(startDate, endDate, g);
@@ -567,10 +520,10 @@ export async function getHistoryCrashes(startDate: string, endDate: string, g: G
 	});
 }
 
-export async function getHistoryAuthFailures(startDate: string, endDate: string, g: Granularity) {
+export async function getHistoryAuthFailures(startDate: string, endDate: string, g: Granularity, env: Env) {
 	const [failuresByBucket, sessionStartsByBucket] = await Promise.all([
-		bucketedEventCount(startDate, endDate, g, 'StartView_authentication_Fail'),
-		bucketedEventCount(startDate, endDate, g, 'session_start'),
+		bucketedEventCount(startDate, endDate, g, 'StartView_authentication_Fail', env),
+		bucketedEventCount(startDate, endDate, g, 'session_start', env),
 	]);
 
 	const scaffold = enumerateBuckets(startDate, endDate, g);
@@ -582,11 +535,10 @@ export async function getHistoryAuthFailures(startDate: string, endDate: string,
 	});
 }
 
-export async function getRealtimeActiveUsers() {
-	const [response] = await getClient().runRealtimeReport({
-		property: `properties/${propertyId()}`,
+export async function getRealtimeActiveUsers(env: Env) {
+	const response = await runRealtimeReport({
 		metrics: [{ name: 'activeUsers' }],
-	});
+	}, env);
 	const users = Number(response.rows?.[0]?.metricValues?.[0]?.value || 0);
 	return { users };
 }

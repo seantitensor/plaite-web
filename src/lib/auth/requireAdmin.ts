@@ -1,5 +1,6 @@
 import type { APIContext } from 'astro';
-import { adminAuth } from '../firebase/admin';
+import { getAuth } from './firebaseEdge';
+import { env } from "cloudflare:workers";
 
 export async function requireAdmin(ctx: APIContext): Promise<Response | null> {
 	const session = ctx.cookies.get('__session')?.value;
@@ -11,7 +12,8 @@ export async function requireAdmin(ctx: APIContext): Promise<Response | null> {
 	}
 
 	try {
-		const decoded = await adminAuth.verifySessionCookie(session, true);
+		const auth = getAuth(env);
+		const decoded = await auth.verifySessionCookie(session, true);
 		if (!decoded.admin) {
 			return new Response(JSON.stringify({ error: 'Forbidden' }), {
 				status: 403,

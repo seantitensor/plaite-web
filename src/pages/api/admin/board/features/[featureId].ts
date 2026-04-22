@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../../../lib/auth/requireAdmin';
+import { updateDoc, deleteDoc } from '../../../../../lib/edge/firestore';
+import { env } from "cloudflare:workers";
 
 export const PUT: APIRoute = async (ctx) => {
 	const denied = await requireAdmin(ctx);
@@ -16,7 +18,6 @@ export const PUT: APIRoute = async (ctx) => {
 		}
 
 		const body = await request.json();
-		const { adminDb } = await import('../../../../../lib/firebase/admin');
 
 		const updateData: Record<string, any> = { updatedAt: new Date() };
 		const allowedFields = ['title', 'description', 'epicId', 'order', 'todos'];
@@ -26,7 +27,7 @@ export const PUT: APIRoute = async (ctx) => {
 			}
 		}
 
-		await adminDb.collection('admin_features').doc(featureId).update(updateData);
+		await updateDoc('admin_features', featureId, updateData, env);
 
 		return new Response(JSON.stringify({ success: true }), {
 			headers: { 'Content-Type': 'application/json' },
@@ -53,8 +54,7 @@ export const DELETE: APIRoute = async (ctx) => {
 			});
 		}
 
-		const { adminDb } = await import('../../../../../lib/firebase/admin');
-		await adminDb.collection('admin_features').doc(featureId).delete();
+		await deleteDoc('admin_features', featureId, env);
 
 		return new Response(JSON.stringify({ success: true }), {
 			headers: { 'Content-Type': 'application/json' },

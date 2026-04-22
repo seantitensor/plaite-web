@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../../lib/auth/requireAdmin';
+import { getScreenViews } from '../../../../lib/firebase/analytics';
+import { env } from "cloudflare:workers";
 
 export const GET: APIRoute = async (ctx) => {
 	const denied = await requireAdmin(ctx);
@@ -10,10 +12,9 @@ export const GET: APIRoute = async (ctx) => {
 	const endDate = url.searchParams.get('endDate') || 'today';
 
 	try {
-		const { getScreenViews } = await import('../../../../lib/firebase/analytics');
-		const response = await getScreenViews(startDate, endDate);
+		const response = await getScreenViews(startDate, endDate, env);
 
-		const screens = (response.rows || []).map((row) => ({
+		const screens = (response.rows || []).map((row: any) => ({
 			screen: row.dimensionValues?.[0]?.value || '(unknown)',
 			views: Number(row.metricValues?.[0]?.value || 0),
 			users: Number(row.metricValues?.[1]?.value || 0),

@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../../lib/auth/requireAdmin';
+import { getActiveUsers, getSessions, getOverviewTotals } from '../../../../lib/firebase/analytics';
+import { env } from "cloudflare:workers";
 
 export const GET: APIRoute = async (ctx) => {
 	const denied = await requireAdmin(ctx);
@@ -10,12 +12,10 @@ export const GET: APIRoute = async (ctx) => {
 	const endDate = url.searchParams.get('endDate') || 'today';
 
 	try {
-		const { getActiveUsers, getSessions, getOverviewTotals } = await import('../../../../lib/firebase/analytics');
-
 		const [usersResponse, sessionsResponse, totals] = await Promise.all([
-			getActiveUsers(startDate, endDate),
-			getSessions(startDate, endDate),
-			getOverviewTotals(startDate, endDate),
+			getActiveUsers(startDate, endDate, env),
+			getSessions(startDate, endDate, env),
+			getOverviewTotals(startDate, endDate, env),
 		]);
 
 		const dailyData: Record<string, any> = {};

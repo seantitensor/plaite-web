@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../../lib/auth/requireAdmin';
+import { getRetentionCohorts } from '../../../../lib/firebase/analytics';
+import { env } from "cloudflare:workers";
 
 export const GET: APIRoute = async (ctx) => {
 	const denied = await requireAdmin(ctx);
@@ -10,8 +12,7 @@ export const GET: APIRoute = async (ctx) => {
 	const endDate = url.searchParams.get('endDate') || 'today';
 
 	try {
-		const { getRetentionCohorts } = await import('../../../../lib/firebase/analytics');
-		const response = await getRetentionCohorts(startDate, endDate);
+		const response = await getRetentionCohorts(startDate, endDate, env);
 
 		const cohorts: Record<string, Record<string, number>> = {};
 

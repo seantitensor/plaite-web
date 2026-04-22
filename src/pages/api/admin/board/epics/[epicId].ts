@@ -1,5 +1,13 @@
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../../../lib/auth/requireAdmin';
+import {
+	updateDoc,
+	queryWhere,
+	commitBatch,
+	buildDocName,
+	type FirestoreWrite,
+} from '../../../../../lib/edge/firestore';
+import { env } from 'cloudflare:workers';
 
 export const PUT: APIRoute = async (ctx) => {
 	const denied = await requireAdmin(ctx);
@@ -16,13 +24,12 @@ export const PUT: APIRoute = async (ctx) => {
 		}
 
 		const body = await request.json();
-		const { adminDb } = await import('../../../../../lib/firebase/admin');
 
 		const updateData: Record<string, any> = { updatedAt: new Date() };
 		if (body.name !== undefined) updateData.name = String(body.name).trim();
 		if (body.order !== undefined) updateData.order = body.order;
 
-		await adminDb.collection('admin_epics').doc(epicId).update(updateData);
+		await updateDoc('admin_epics', epicId, updateData, env);
 
 		return new Response(JSON.stringify({ success: true }), {
 			headers: { 'Content-Type': 'application/json' },
@@ -49,20 +56,18 @@ export const DELETE: APIRoute = async (ctx) => {
 			});
 		}
 
-		const { adminDb } = await import('../../../../../lib/firebase/admin');
 
-		// Cascade: delete all features under this epic, then the epic itself
-		const featuresSnap = await adminDb
-			.collection('admin_features')
-			.where('epicId', '==', epicId)
-			.get();
+		const features = await queryWhere('admin_features', 'epicId', '==', epicId, env);
 
-		const batch = adminDb.batch();
-		featuresSnap.docs.forEach((doc) => batch.delete(doc.ref));
-		batch.delete(adminDb.collection('admin_epics').doc(epicId));
-		await batch.commit();
+		const writes: FirestoreWrite[] = [];
+		for (const f of features) {
+			writes.push({ delete: await buildDocName('admin_features', f.id, env) });
+		}
+		writes.push({ delete: await buildDocName('admin_epics', epicId, env) });
 
-		return new Response(JSON.stringify({ success: true, deletedFeatures: featuresSnap.size }), {
+		await commitBatch(writes, env);
+
+		return new Response(JSON.stringify({ success: true, deletedFeatures: features.length }), {
 			headers: { 'Content-Type': 'application/json' },
 		});
 	} catch (error: any) {

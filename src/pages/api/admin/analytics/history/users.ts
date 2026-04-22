@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
 import { requireAdmin } from '../../../../../lib/auth/requireAdmin';
+import { getHistoryUsers, computeGranularity } from '../../../../../lib/firebase/analytics';
+import { env } from "cloudflare:workers";
 
 export const GET: APIRoute = async (ctx) => {
 	const denied = await requireAdmin(ctx);
@@ -10,9 +12,8 @@ export const GET: APIRoute = async (ctx) => {
 	const endDate = url.searchParams.get('endDate') || 'today';
 
 	try {
-		const { getHistoryUsers, computeGranularity } = await import('../../../../../lib/firebase/analytics');
 		const granularity = computeGranularity(startDate, endDate);
-		const buckets = await getHistoryUsers(startDate, endDate, granularity);
+		const buckets = await getHistoryUsers(startDate, endDate, granularity, env);
 		return new Response(JSON.stringify({ granularity, buckets }), {
 			headers: { 'Content-Type': 'application/json' },
 		});
