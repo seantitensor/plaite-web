@@ -20,7 +20,17 @@ export const PUT: APIRoute = async (ctx) => {
 		const body = await request.json();
 
 		const updateData: Record<string, any> = { updatedAt: new Date() };
-		const allowedFields = ['title', 'description', 'epicId', 'order', 'todos'];
+		const allowedFields = [
+			'title',
+			'description',
+			'epicId',
+			'order',
+			'todos',
+			'status',
+			'priority',
+			'labels',
+			'archived',
+		];
 		for (const field of allowedFields) {
 			if (body[field] !== undefined) {
 				updateData[field] = body[field];

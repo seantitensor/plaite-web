@@ -26,6 +26,10 @@ export const POST: APIRoute = async (ctx) => {
 			description: body.description || '',
 			order: body.order ?? Date.now(),
 			todos: [] as Array<{ id: string; text: string; done: boolean; order: number }>,
+			status: 'not_started',
+			priority: 'p2',
+			labels: [] as string[],
+			archived: false,
 			createdAt: new Date(),
 			updatedAt: new Date(),
 		};

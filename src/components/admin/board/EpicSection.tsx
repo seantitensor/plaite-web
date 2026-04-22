@@ -14,6 +14,7 @@ import { sortByOrder } from './orderUtils';
 interface Props {
 	epic: Epic;
 	features: Feature[];
+	collapseVersion: number;
 	onRename: (name: string) => void;
 	onDelete: () => void;
 	onFeatureAdd: (epicId: string, title: string) => Promise<void> | void;
@@ -24,6 +25,7 @@ interface Props {
 export default function EpicSection({
 	epic,
 	features,
+	collapseVersion,
 	onRename,
 	onDelete,
 	onFeatureAdd,
@@ -69,6 +71,26 @@ export default function EpicSection({
 		if (confirm(msg)) onDelete();
 	}
 
+	// Aggregate progress across the epic's features (excluding archived).
+	// A feature counts as 100% when status === 'done'; otherwise by its todo
+	// completion ratio. A feature with status !== 'done' AND no todos counts
+	// as 0% (nothing to show yet).
+	const activeFeatures = features.filter((f) => !f.archived);
+	const perFeatureProgress = activeFeatures.map((f) => {
+		if (f.status === 'done') return 1;
+		const total = f.todos?.length || 0;
+		if (total === 0) return 0;
+		const done = f.todos!.filter((t) => t.done).length;
+		return done / total;
+	});
+	const epicPct =
+		perFeatureProgress.length === 0
+			? 0
+			: Math.round(
+				(perFeatureProgress.reduce((s, p) => s + p, 0) / perFeatureProgress.length) * 100,
+			);
+	const doneFeatures = activeFeatures.filter((f) => f.status === 'done').length;
+
 	return (
 		<div ref={setNodeRef} style={wrapperStyle}>
 			<div style={styles.header}>
@@ -94,8 +116,19 @@ export default function EpicSection({
 					}}
 					style={styles.name}
 				/>
+				{activeFeatures.length > 0 && (
+					<div
+						style={styles.progressWrap}
+						title={`${doneFeatures} of ${activeFeatures.length} features done`}
+					>
+						<div style={styles.progressBar}>
+							<div style={{ ...styles.progressFill, width: `${epicPct}%` }} />
+						</div>
+						<span style={styles.progressLabel}>{epicPct}%</span>
+					</div>
+				)}
 				<span style={styles.count}>
-					{features.length} feature{features.length === 1 ? '' : 's'}
+					{doneFeatures}/{activeFeatures.length} done
 				</span>
 				<button type="button" onClick={handleDelete} style={styles.deleteBtn} title="Delete epic">
 					×
@@ -114,6 +147,7 @@ export default function EpicSection({
 						<FeatureRow
 							key={feature.id}
 							feature={feature}
+							collapseVersion={collapseVersion}
 							onUpdate={(updates) => onFeatureUpdate(feature.id, updates)}
 							onDelete={() => onFeatureDelete(feature.id)}
 						/>
@@ -180,5 +214,31 @@ const styles: Record<string, React.CSSProperties> = {
 	body: {
 		padding: '0.85rem 1rem',
 		transition: 'background 0.15s ease',
+	},
+	progressWrap: {
+		display: 'flex',
+		alignItems: 'center',
+		gap: '0.5rem',
+		flexShrink: 0,
+	},
+	progressBar: {
+		width: '120px',
+		height: '6px',
+		background: '#f1f5f9',
+		borderRadius: '3px',
+		overflow: 'hidden',
+	},
+	progressFill: {
+		height: '100%',
+		background: '#4A9B6B',
+		transition: 'width 0.2s ease',
+	},
+	progressLabel: {
+		fontSize: '0.72rem',
+		color: '#64748b',
+		fontVariantNumeric: 'tabular-nums',
+		fontWeight: 500,
+		minWidth: '2.3rem',
+		textAlign: 'right',
 	},
 };

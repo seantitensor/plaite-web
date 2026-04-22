@@ -1,11 +1,15 @@
 ---
 import AdminLayout from '../../components/admin/AdminLayout.astro';
+import OverviewStats from '../../components/admin/overview/OverviewStats';
+import RecentActivity from '../../components/admin/overview/RecentActivity';
 ---
 
 <AdminLayout title="Dashboard" activePage="overview">
 	<div class="overview">
 		<h1>Dashboard</h1>
 		<p class="subtitle">Welcome to the plaite admin dashboard.</p>
+
+		<OverviewStats client:load />
 
 		<div class="cards">
 			<a href="/admin/analytics" class="card">
@@ -62,6 +66,8 @@ import AdminLayout from '../../components/admin/AdminLayout.astro';
 				<p>Ingest, enrich, and moderate recipes coming into the app — tagging, nutrition, duplicate detection, and image processing. In development.</p>
 			</div>
 		</div>
+
+		<RecentActivity client:load />
 	</div>
 </AdminLayout>
 

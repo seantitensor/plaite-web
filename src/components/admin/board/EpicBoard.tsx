@@ -13,12 +13,14 @@ import {
 	SortableContext,
 	verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import type { Epic, Feature } from './types';
+import type { Epic, Feature, FeatureStatus } from './types';
+import { STATUS_LABELS } from './types';
 import EpicSection from './EpicSection';
 import AddEpicForm from './AddEpicForm';
 import { computeOrder, nextOrder, sortByOrder } from './orderUtils';
 
 type DragType = 'epic' | 'feature' | null;
+type StatusFilter = 'all' | FeatureStatus;
 
 export default function EpicBoard() {
 	const [epics, setEpics] = useState<Epic[]>([]);
@@ -26,6 +28,15 @@ export default function EpicBoard() {
 	const [loading, setLoading] = useState(true);
 	const [activeType, setActiveType] = useState<DragType>(null);
 	const [activeId, setActiveId] = useState<string | null>(null);
+
+	// Filters
+	const [showArchived, setShowArchived] = useState(false);
+	const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+	const [labelFilter, setLabelFilter] = useState<string>('');
+
+	// Bumped on every drag-start so all expanded features collapse — easier to
+	// see where things land when dragging.
+	const [collapseVersion, setCollapseVersion] = useState(0);
 
 	// Snapshot feature placement before drag start so we can persist only the final location.
 	const dragOriginRef = useRef<{ epicId: string; order: number } | null>(null);
@@ -59,8 +70,23 @@ export default function EpicBoard() {
 	const sortedEpics = useMemo(() => sortByOrder(epics), [epics]);
 	const epicIds = useMemo(() => sortedEpics.map((e) => `epic-${e.id}`), [sortedEpics]);
 
+	// All labels in use across features (for filter dropdown).
+	const allLabels = useMemo(() => {
+		const set = new Set<string>();
+		for (const f of features) for (const l of f.labels || []) set.add(l);
+		return Array.from(set).sort();
+	}, [features]);
+
+	const archivedCount = features.filter((f) => f.archived).length;
+
 	function featuresForEpic(epicId: string): Feature[] {
-		return features.filter((f) => f.epicId === epicId);
+		return features.filter((f) => {
+			if (f.epicId !== epicId) return false;
+			if (!showArchived && f.archived) return false;
+			if (statusFilter !== 'all' && (f.status ?? 'not_started') !== statusFilter) return false;
+			if (labelFilter && !(f.labels ?? []).includes(labelFilter)) return false;
+			return true;
+		});
 	}
 
 	// ---------- Epic mutations ----------
@@ -147,6 +173,9 @@ export default function EpicBoard() {
 		const parsed = parseId(String(event.active.id));
 		if (!parsed) return;
 
+		// Collapse all expanded features so the drop target is clear.
+		setCollapseVersion((v) => v + 1);
+
 		if (parsed.type === 'epic') {
 			setActiveType('epic');
 			setActiveId(parsed.rest);
@@ -209,10 +238,15 @@ export default function EpicBoard() {
 		// ----- Epic reorder -----
 		if (activeParsed.type === 'epic' && overParsed.type === 'epic') {
 			if (activeParsed.rest === overParsed.rest) return;
+			const activeEpic = epics.find((e) => e.id === activeParsed.rest);
+			const overEpic = epics.find((e) => e.id === overParsed.rest);
+			if (!activeEpic || !overEpic) return;
 			const siblings = sortedEpics.filter((e) => e.id !== activeParsed.rest);
-			const overIndex = siblings.findIndex((e) => e.id === overParsed.rest);
-			if (overIndex === -1) return;
-			const newOrder = computeOrder(siblings, overIndex);
+			let targetIndex = siblings.findIndex((e) => e.id === overParsed.rest);
+			if (targetIndex === -1) return;
+			// Dragging downward: insert AFTER the target, not before.
+			if (activeEpic.order < overEpic.order) targetIndex += 1;
+			const newOrder = computeOrder(siblings, targetIndex);
 
 			setEpics((prev) => prev.map((e) => (e.id === activeParsed.rest ? { ...e, order: newOrder } : e)));
 			await persistEpicOrder(activeParsed.rest, newOrder);
@@ -236,6 +270,16 @@ export default function EpicBoard() {
 			if (overParsed.type === 'feature' && overParsed.rest !== featureId) {
 				targetIndex = siblings.findIndex((f) => f.id === overParsed.rest);
 				if (targetIndex === -1) targetIndex = siblings.length;
+
+				// For same-epic drags: if the source was above the target (dragging
+				// downward), insert AFTER the target instead of before it. Without
+				// this, dropping the top feature onto one below it snaps back above.
+				if (origin && origin.epicId === targetEpicId) {
+					const overFeature = features.find((f) => f.id === overParsed.rest);
+					if (overFeature && origin.order < overFeature.order) {
+						targetIndex += 1;
+					}
+				}
 			} else {
 				// Dropped on the epic body / empty drop zone → append
 				targetIndex = siblings.length;
@@ -288,6 +332,66 @@ export default function EpicBoard() {
 				</span>
 			</div>
 
+			<div style={styles.filterBar}>
+				<label style={styles.filterGroup}>
+					<span style={styles.filterLabel}>Status</span>
+					<select
+						style={styles.select}
+						value={statusFilter}
+						onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+					>
+						<option value="all">All</option>
+						<option value="not_started">{STATUS_LABELS.not_started}</option>
+						<option value="in_progress">{STATUS_LABELS.in_progress}</option>
+						<option value="done">{STATUS_LABELS.done}</option>
+					</select>
+				</label>
+
+				{allLabels.length > 0 && (
+					<label style={styles.filterGroup}>
+						<span style={styles.filterLabel}>Label</span>
+						<select
+							style={styles.select}
+							value={labelFilter}
+							onChange={(e) => setLabelFilter(e.target.value)}
+						>
+							<option value="">All</option>
+							{allLabels.map((l) => (
+								<option key={l} value={l}>
+									{l}
+								</option>
+							))}
+						</select>
+					</label>
+				)}
+
+				<label style={styles.toggle}>
+					<input
+						type="checkbox"
+						checked={showArchived}
+						onChange={(e) => setShowArchived(e.target.checked)}
+						style={{ margin: 0 }}
+					/>
+					<span>
+						Show archived{archivedCount > 0 ? ` (${archivedCount})` : ''}
+					</span>
+				</label>
+
+				{(statusFilter !== 'all' || labelFilter || showArchived) && (
+					<button
+						type="button"
+						style={styles.clearBtn}
+						onClick={() => {
+							setStatusFilter('all');
+							setLabelFilter('');
+							setShowArchived(false);
+						}}
+					>
+						Clear filters
+					</button>
+				)}
+			</div>
+
 			<DndContext
 				sensors={sensors}
 				onDragStart={handleDragStart}
@@ -300,6 +404,7 @@ export default function EpicBoard() {
 							key={epic.id}
 							epic={epic}
 							features={featuresForEpic(epic.id)}
+							collapseVersion={collapseVersion}
 							onRename={(name) => renameEpic(epic.id, name)}
 							onDelete={() => deleteEpic(epic.id)}
 							onFeatureAdd={addFeature}
@@ -353,6 +458,56 @@ const styles: Record<string, React.CSSProperties> = {
 		background: '#f1f5f9',
 		padding: '0.2rem 0.6rem',
 		borderRadius: '4px',
+		fontWeight: 500,
+	},
+	filterBar: {
+		display: 'flex',
+		alignItems: 'center',
+		gap: '1rem',
+		marginBottom: '1.5rem',
+		padding: '0.75rem 1rem',
+		background: '#fff',
+		border: '1px solid #e2e8f0',
+		borderRadius: '8px',
+		flexWrap: 'wrap',
+	},
+	filterGroup: {
+		display: 'flex',
+		alignItems: 'center',
+		gap: '0.4rem',
+	},
+	filterLabel: {
+		fontSize: '0.75rem',
+		fontWeight: 600,
+		color: '#64748b',
+		textTransform: 'uppercase',
+		letterSpacing: '0.04em',
+	},
+	select: {
+		padding: '0.35rem 0.6rem',
+		borderRadius: '6px',
+		border: '1px solid #e2e8f0',
+		background: '#fff',
+		fontSize: '0.85rem',
+		fontFamily: 'Inter, sans-serif',
+		color: '#1e293b',
+	},
+	toggle: {
+		display: 'flex',
+		alignItems: 'center',
+		gap: '0.4rem',
+		fontSize: '0.85rem',
+		color: '#475569',
+		cursor: 'pointer',
+	},
+	clearBtn: {
+		marginLeft: 'auto',
+		background: 'none',
+		border: 'none',
+		color: '#4A9B6B',
+		fontSize: '0.8rem',
+		cursor: 'pointer',
+		fontFamily: 'Inter, sans-serif',
 		fontWeight: 500,
 	},
 	overlayEpic: {
